@@ -24,6 +24,11 @@ def main():
             print(f"   <- {'ok' if ev['ok'] else 'ERROR'} ({ev['ms']} ms): {preview}...")
         elif t == "final":
             print("\n" + "=" * 70 + "\n" + ev["text"])
+        elif t == "citation_check":
+            status = "UNVERIFIED: " + ", ".join(ev["unverified"]) if ev["unverified"] else "all citations verified"
+            print(f"\n[citation check] cited {ev['cited']} -> {status}")
+        elif t == "notice":
+            print(f"   [notice] {ev['text']}")
         elif t == "error":
             print(f"\n[error] {ev['text']}")
         elif t == "stats":

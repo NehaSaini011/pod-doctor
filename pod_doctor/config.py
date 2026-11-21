@@ -8,6 +8,25 @@ ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
 
+def _extend_windows_path():
+    """Docker Desktop and winget install docker/kind/kubectl in standard folders that
+    Git Bash and VS Code terminals often don't search. Add them so we always find them."""
+    if os.name != "nt":
+        return
+    candidates = [
+        Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "Docker" / "Docker" / "resources" / "bin",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Links",
+    ]
+    path = os.environ.get("PATH", "")
+    for folder in candidates:
+        if folder.is_dir() and str(folder).lower() not in path.lower():
+            path += os.pathsep + str(folder)
+    os.environ["PATH"] = path
+
+
+_extend_windows_path()
+
+
 def _get(name, default=""):
     """Read a setting from the environment / .env, or from Streamlit secrets when deployed."""
     value = os.getenv(name)
@@ -22,7 +41,10 @@ def _get(name, default=""):
 
 
 GEMINI_API_KEY = _get("GEMINI_API_KEY", "")
-GEMINI_MODEL = _get("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_MODEL = _get("GEMINI_MODEL", "gemini-3.6-flash")
+# Backup models tried in order if the main one is busy, rate-limited or not found.
+FALLBACK_MODELS = [m.strip() for m in _get("FALLBACK_MODELS", "gemini-3.8-flash,gemini-3.5-flash-lite").split(",") if m.strip()]
+MODELS = [GEMINI_MODEL] + [m for m in FALLBACK_MODELS if m != GEMINI_MODEL]
 EMBED_MODEL = _get("EMBED_MODEL", "gemini-embedding-001")
 
 # Which cluster and namespace the agent is allowed to look at.

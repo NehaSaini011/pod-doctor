@@ -57,6 +57,26 @@ expected = {
 for query, runbook in expected.items():
     check(f"{runbook:32s} <- '{query}'", get_index().search(query, k=1)[0]["runbook"] == runbook)
 
+print("\nCitation check tests")
+from pod_doctor.agent import check_citations  # noqa: E402
+
+_events = [{"type": "tool_result", "name": "search_runbooks",
+            "result": {"results": [{"runbook": "oomkilled.md"}, {"runbook": "crashloopbackoff.md"}]}}]
+_ok = check_citations("Runbook: `oomkilled.md`", _events)
+_bad = check_citations("Runbook: `oomkilled.md`, `exit-codes.md`", _events)
+check("retrieved runbook counts as verified", _ok["verified"] == ["oomkilled.md"] and not _ok["unverified"])
+check("never-retrieved runbook is flagged", _bad["unverified"] == ["exit-codes.md"])
+
+from pod_doctor.agent import review_report  # noqa: E402
+
+_pods = {"type": "tool_result", "name": "list_pods", "result": k8s_tools.list_pods()}
+check("self-review flags 'none retrieved' and unread crash logs",
+      len(review_report("Runbook: none retrieved", _events + [_pods])) == 2)
+check("self-review passes a complete report",
+      review_report("Runbook: `oomkilled.md`", _events + [
+          {"type": "tool_call", "name": "get_pod_logs", "args": {"pod_name": p, "previous": True}}
+          for p in ("payment-api-5f6b-xk2lp", "report-worker-79b4-mn3op")]) == [])
+
 print("\nSnapshot mode tests (what the deployed website uses)")
 import contextlib, io, tempfile  # noqa: E402
 import scripts.snapshot as snapshot_script  # noqa: E402

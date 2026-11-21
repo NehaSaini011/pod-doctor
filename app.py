@@ -110,13 +110,15 @@ def render(ev, area):
                 st.caption(f"retrieval backend: {res.get('backend')}")
             else:
                 st.json(res)
+    elif t == "notice":
+        area.caption(f"⏳ {ev['text']}")
     elif t == "error":
         area.error(ev["text"])
 
 
 def show_investigation(question, events_iter, delay=0.0):
     st.markdown(f"#### ❓ {question}")
-    final, stats = None, None
+    final, stats, citations = None, None, None
     trace = st.container(border=True)
     trace.markdown("**🤖 Agent trace** — what the agent decided to do, step by step")
     with st.spinner("Agent is investigating..."):
@@ -125,6 +127,8 @@ def show_investigation(question, events_iter, delay=0.0):
                 final = ev["text"]
             elif ev["type"] == "stats":
                 stats = ev
+            elif ev["type"] == "citation_check":
+                citations = ev
             else:
                 render(ev, trace)
             if delay:
@@ -135,6 +139,16 @@ def show_investigation(question, events_iter, delay=0.0):
         st.success("Investigation complete — incident report below")
         with st.container(border=True):
             st.markdown(final)
+        if citations:
+            if citations["unverified"]:
+                st.warning("🔎 **Citation check:** the report cites runbooks the agent never retrieved: "
+                           + ", ".join(f"`{c}`" for c in citations["unverified"])
+                           + ". Treat those citations as unverified.")
+            elif citations["cited"]:
+                st.caption(f"🔎 Citation check passed: all {len(citations['cited'])} cited runbooks "
+                           f"({', '.join(citations['cited'])}) were actually retrieved by search_runbooks.")
+            else:
+                st.caption("🔎 Citation check: the report cites no runbooks.")
 
 
 # ------------------------------------------------------------------ ask the agent

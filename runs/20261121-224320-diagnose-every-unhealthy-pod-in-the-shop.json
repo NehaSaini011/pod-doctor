@@ -1,0 +1,16 @@
+{
+ "question": "Diagnose every unhealthy pod in the shop namespace and tell me how to fix each one.",
+ "model": "gemini-3.8-flash",
+ "events": [
+  {
+   "type": "error",
+   "text": "ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+  },
+  {
+   "type": "stats",
+   "model": "gemini-3.8-flash",
+   "tool_calls": 0,
+   "seconds": 310.2
+  }
+ ]
+}

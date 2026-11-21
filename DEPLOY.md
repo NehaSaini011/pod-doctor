@@ -51,7 +51,8 @@ If `.env` appears in `git status`, stop and make sure `.gitignore` is in the fol
 5. Open **Advanced settings** and paste this into **Secrets**, replacing the values:
    ```toml
    GEMINI_API_KEY = "your-gemini-key"
-   GEMINI_MODEL = "gemini-3.8-flash"
+   GEMINI_MODEL = "gemini-3.6-flash"
+   FALLBACK_MODELS = "gemini-3.8-flash,gemini-3.5-flash-lite"
    CLUSTER_MODE = "snapshot"
    APP_PASSWORD = "pick-an-access-code"
    MAX_RUNS_PER_SESSION = "5"

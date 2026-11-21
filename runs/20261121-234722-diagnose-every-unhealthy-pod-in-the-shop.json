@@ -1,0 +1,535 @@
+{
+ "question": "Diagnose every unhealthy pod in the shop namespace and tell me how to fix each one.",
+ "model": "gemini-3.5-flash-lite",
+ "events": [
+  {
+   "type": "tool_call",
+   "step": 1,
+   "name": "list_pods",
+   "args": {
+    "namespace": "shop"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 1,
+   "name": "list_pods",
+   "result": {
+    "namespace": "shop",
+    "pod_count": 8,
+    "unhealthy_pods": [
+     "auth-service-7f66bfdbcb-l9g2z",
+     "inventory-service-64f57b7fd9-qdf54",
+     "orders-api-5c596455f4-9gd9l",
+     "payment-api-859f8d44f9-9rwfc",
+     "report-worker-69b4468dd9-bpwns",
+     "search-api-d7d455497-s76bx"
+    ],
+    "pods": [
+     {
+      "pod": "auth-service-7f66bfdbcb-l9g2z",
+      "app": "auth-service",
+      "status": "CreateContainerConfigError",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "inventory-service-64f57b7fd9-qdf54",
+      "app": "inventory-service",
+      "status": "ImagePullBackOff",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "orders-api-5c596455f4-9gd9l",
+      "app": "orders-api",
+      "status": "Running",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "payment-api-859f8d44f9-9rwfc",
+      "app": "payment-api",
+      "status": "Error",
+      "ready": "0/1",
+      "restarts": 18,
+      "last_termination": {
+       "reason": "Error",
+       "exit_code": 1
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "report-worker-69b4468dd9-bpwns",
+      "app": "report-worker",
+      "status": "CrashLoopBackOff",
+      "ready": "0/1",
+      "restarts": 18,
+      "last_termination": {
+       "reason": "OOMKilled",
+       "exit_code": 137
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "search-api-d7d455497-s76bx",
+      "app": "search-api",
+      "status": "Pending (Unschedulable)",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "<none>",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "web-frontend-5cf4c554fc-kxxzg",
+      "app": "web-frontend",
+      "status": "Running",
+      "ready": "1/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": true
+     },
+     {
+      "pod": "web-frontend-5cf4c554fc-prfsw",
+      "app": "web-frontend",
+      "status": "Running",
+      "ready": "1/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": true
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 178
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "namespace": "shop",
+    "pod_name": "auth-service-7f66bfdbcb-l9g2z"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "auth-service-7f66bfdbcb-l9g2z",
+    "describe": "Name:             auth-service-7f66bfdbcb-l9g2z\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             pod-doctor-control-plane/172.19.0.2\nStart Time:       Sat, 21 Nov 2026 22:35:09 +0530\nLabels:           app=auth-service\n                  pod-template-hash=7f66bfdbcb\nAnnotations:      <none>\nStatus:           Pending\nIP:               10.244.0.2\nIPs:\n  IP:           10.244.0.2\nControlled By:  ReplicaSet/auth-service-7f66bfdbcb\nContainers:\n  auth:\n    Container ID:   \n    Image:          nginx:1.27-alpine\n    Image ID:       \n    Port:           80/TCP\n    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       CreateContainerConfigError\n    Ready:          False\n    Restart Count:  0\n    Limits:\n      cpu:     100m\n      memory:  64Mi\n    Requests:\n      cpu:     20m\n      memory:  16Mi\n    Environment Variables from:\n      auth-config  ConfigMap  Optional: false\n    Environment:   <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kz4gc (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-kz4gc:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason  Age                    From     Message\n  ----     ------  ----                   ----     -------\n  Normal   Pulled  5m13s (x274 over 71m)  kubelet  spec.containers{auth}: Container image \"nginx:1.27-alpine\" already present on machine and can be accessed by the pod\n  Warning  Failed  4m43s (x277 over 71m)  kubelet  spec.containers{auth}: Error: configmap \"auth-config\" not found\n"
+   },
+   "ok": true,
+   "ms": 179
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "pod_name": "inventory-service-64f57b7fd9-qdf54",
+    "namespace": "shop"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "inventory-service-64f57b7fd9-qdf54",
+    "describe": "Name:             inventory-service-64f57b7fd9-qdf54\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             pod-doctor-control-plane/172.19.0.2\nStart Time:       Sat, 21 Nov 2026 22:35:10 +0530\nLabels:           app=inventory-service\n                  pod-template-hash=64f57b7fd9\nAnnotations:      <none>\nStatus:           Pending\nIP:               10.244.0.10\nIPs:\n  IP:           10.244.0.10\nControlled By:  ReplicaSet/inventory-service-64f57b7fd9\nContainers:\n  inventory:\n    Container ID:   \n    Image:          nginx:1.27-alpne\n    Image ID:       \n    Port:           80/TCP\n    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       ImagePullBackOff\n    Ready:          False\n    Restart Count:  0\n    Limits:\n      cpu:     100m\n      memory:  64Mi\n    Requests:\n      cpu:        20m\n      memory:     16Mi\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-dqcmw (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-dqcmw:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason   Age                    From     Message\n  ----     ------   ----                   ----     -------\n  Normal   BackOff  5m (x259 over 71m)     kubelet  spec.containers{inventory}: Back-off pulling image \"nginx:1.27-alpne\"\n  Warning  Failed   4m35s (x261 over 71m)  kubelet  spec.containers{inventory}: Error: ImagePullBackOff\n"
+   },
+   "ok": true,
+   "ms": 151
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "pod_name": "orders-api-5c596455f4-9gd9l",
+    "namespace": "shop"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "orders-api-5c596455f4-9gd9l",
+    "describe": "Name:             orders-api-5c596455f4-9gd9l\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             pod-doctor-control-plane/172.19.0.2\nStart Time:       Sat, 21 Nov 2026 22:35:10 +0530\nLabels:           app=orders-api\n                  pod-template-hash=5c596455f4\nAnnotations:      <none>\nStatus:           Running\nIP:               10.244.0.7\nIPs:\n  IP:           10.244.0.7\nControlled By:  ReplicaSet/orders-api-5c596455f4\nContainers:\n  orders:\n    Container ID:   containerd://28397997daf4e1ed830df1e8c9ddef6fa8f01f74e1d4169a64e716828fb9ada1\n    Image:          nginx:1.27-alpine\n    Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10\n    Port:           80/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Sat, 21 Nov 2026 22:35:45 +0530\n    Ready:          False\n    Restart Count:  0\n    Limits:\n      cpu:     100m\n      memory:  64Mi\n    Requests:\n      cpu:        20m\n      memory:     16Mi\n    Readiness:    http-get http://:8080/ delay=2s timeout=1s period=5s #success=1 #failure=3\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-r5rxb (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-r5rxb:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason     Age                    From     Message\n  ----     ------     ----                   ----     -------\n  Warning  Unhealthy  4m34s (x744 over 71m)  kubelet  spec.containers{orders}: Readiness probe failed: Get \"http://10.244.0.7:8080/\": dial tcp 10.244.0.7:8080: connect: connection refused\n"
+   },
+   "ok": true,
+   "ms": 116
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "namespace": "shop",
+    "pod_name": "payment-api-859f8d44f9-9rwfc"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "payment-api-859f8d44f9-9rwfc",
+    "describe": "Name:             payment-api-859f8d44f9-9rwfc\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             pod-doctor-control-plane/172.19.0.2\nStart Time:       Sat, 21 Nov 2026 22:35:09 +0530\nLabels:           app=payment-api\n                  pod-template-hash=859f8d44f9\nAnnotations:      <none>\nStatus:           Running\nIP:               10.244.0.5\nIPs:\n  IP:           10.244.0.5\nControlled By:  ReplicaSet/payment-api-859f8d44f9\nContainers:\n  api:\n    Container ID:  containerd://7924bf2b3b2d135ae610a770fb3af02d36df16c17c431b4e778f6bdd2c1283d9\n    Image:         busybox:1.36\n    Image ID:      docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662\n    Port:          <none>\n    Host Port:     <none>\n    Command:\n      sh\n      -c\n    Args:\n      echo \"Starting payment-api v2.3.1\"\n      echo \"Loading config from environment...\"\n      echo \"PAYMENT_GATEWAY=$PAYMENT_GATEWAY\"\n      if [ -z \"$DATABASE_URL\" ]; then\n        echo \"FATAL: required environment variable DATABASE_URL is not set\" >&2\n        echo \"payment-api exiting with code 1\" >&2\n        exit 1\n      fi\n      echo \"Connected to database\"; sleep 3600\n      \n    State:          Terminated\n      Reason:       Error\n      Exit Code:    1\n      Started:      Sat, 21 Nov 2026 23:45:57 +0530\n      Finished:     Sat, 21 Nov 2026 23:45:57 +0530\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    1\n      Started:      Sat, 21 Nov 2026 23:40:39 +0530\n      Finished:     Sat, 21 Nov 2026 23:40:39 +0530\n    Ready:          False\n    Restart Count:  18\n    Limits:\n      cpu:     100m\n      memory:  64Mi\n    Requests:\n      cpu:     20m\n      memory:  16Mi\n    Environment:\n      PAYMENT_GATEWAY:  razorpay-sandbox\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-bd2q4 (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-bd2q4:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason   Age                   From     Message\n  ----     ------   ----                  ----     -------\n  Normal   Created  54m (x9 over 71m)     kubelet  spec.containers{api}: Container created\n  Normal   Started  54m (x9 over 71m)     kubelet  spec.containers{api}: Container started\n  Warning  BackOff  3m19s (x55 over 71m)  kubelet  spec.containers{api}: Back-off restarting failed container api in pod payment-api-859f8d44f9-9rwfc_shop(385f5ef0-850b-4a01-849a-d90521cdf99c)\n  Normal   Pulled   68s (x18 over 71m)    kubelet  spec.containers{api}: Container image \"busybox:1.36\" already present on machine and can be accessed by the pod\n"
+   },
+   "ok": true,
+   "ms": 142
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "pod_name": "report-worker-69b4468dd9-bpwns",
+    "namespace": "shop"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "report-worker-69b4468dd9-bpwns",
+    "describe": "Name:             report-worker-69b4468dd9-bpwns\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             pod-doctor-control-plane/172.19.0.2\nStart Time:       Sat, 21 Nov 2026 22:35:09 +0530\nLabels:           app=report-worker\n                  pod-template-hash=69b4468dd9\nAnnotations:      <none>\nStatus:           Running\nIP:               10.244.0.3\nIPs:\n  IP:           10.244.0.3\nControlled By:  ReplicaSet/report-worker-69b4468dd9\nContainers:\n  worker:\n    Container ID:  containerd://f73175a12178e812bc741d59de0fd5adc675f86f41037abf31ae6c5e3ed243ad\n    Image:         polinux/stress\n    Image ID:      docker.io/polinux/stress@sha256:b6144f84f9c15dac80deb48d3a646b55c7043ab1d83ea0a697c09097aaad21aa\n    Port:          <none>\n    Host Port:     <none>\n    Command:\n      stress\n    Args:\n      --vm\n      1\n      --vm-bytes\n      250M\n      --vm-hang\n      1\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n      Started:      Sat, 21 Nov 2026 23:45:21 +0530\n      Finished:     Sat, 21 Nov 2026 23:45:22 +0530\n    Ready:          False\n    Restart Count:  18\n    Limits:\n      cpu:     200m\n      memory:  100Mi\n    Requests:\n      cpu:        50m\n      memory:     50Mi\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-dvlmx (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-dvlmx:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason   Age                  From     Message\n  ----     ------   ----                 ----     -------\n  Normal   Pulled   65m                  kubelet  spec.containers{worker}: Successfully pulled image \"polinux/stress\" in 1.393s (1.393s including waiting). Image size: 4041495 bytes.\n  Warning  BackOff  4m2s (x56 over 71m)  kubelet  spec.containers{worker}: Back-off restarting failed container worker in pod report-worker-69b4468dd9-bpwns_shop(b9adec83-86f0-471a-b4ce-b05940fed44f)\n  Normal   Pulling  105s (x19 over 71m)  kubelet  spec.containers{worker}: Pulling image \"polinux/stress\"\n"
+   },
+   "ok": true,
+   "ms": 126
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "namespace": "shop",
+    "pod_name": "search-api-d7d455497-s76bx"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "search-api-d7d455497-s76bx",
+    "describe": "Name:             search-api-d7d455497-s76bx\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             <none>\nLabels:           app=search-api\n                  pod-template-hash=d7d455497\nAnnotations:      <none>\nStatus:           Pending\nIP:               \nIPs:              <none>\nControlled By:    ReplicaSet/search-api-d7d455497\nContainers:\n  search:\n    Image:      nginx:1.27-alpine\n    Port:       80/TCP\n    Host Port:  0/TCP\n    Limits:\n      cpu:     32\n      memory:  128Mi\n    Requests:\n      cpu:        32\n      memory:     64Mi\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-s4lsg (ro)\nConditions:\n  Type           Status\n  PodScheduled   False \nVolumes:\n  kube-api-access-s4lsg:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason            Age                  From               Message\n  ----     ------            ----                 ----               -------\n  Warning  FailedScheduling  5m3s (x13 over 71m)  default-scheduler  0/1 nodes are available: 1 Insufficient cpu. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.\n"
+   },
+   "ok": true,
+   "ms": 131
+  },
+  {
+   "type": "tool_call",
+   "step": 3,
+   "name": "get_pod_logs",
+   "args": {
+    "namespace": "shop",
+    "previous": true,
+    "pod_name": "payment-api-859f8d44f9-9rwfc"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 3,
+   "name": "get_pod_logs",
+   "result": {
+    "pod": "payment-api-859f8d44f9-9rwfc",
+    "previous": true,
+    "logs": "unable to retrieve container logs for containerd://952132b734ee56737617e9039aa1f62192ea93e9bc057fac793a4688397bc345"
+   },
+   "ok": true,
+   "ms": 154
+  },
+  {
+   "type": "tool_call",
+   "step": 3,
+   "name": "search_runbooks",
+   "args": {
+    "query": "OOMKilled memory limit"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 3,
+   "name": "search_runbooks",
+   "result": {
+    "query": "OOMKilled memory limit",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "oomkilled.md",
+      "title": "Runbook: OOMKilled (Out Of Memory)",
+      "similarity": 0.763,
+      "content": "# Runbook: OOMKilled (Out Of Memory)\n\n**Symptoms:** Pod restarts repeatedly, often shown as `CrashLoopBackOff` or `OOMKilled`. `kubectl describe pod` shows `Last State: Terminated, Reason: OOMKilled, Exit Code: 137`.\n\n**What it means:** The container tried to use more memory than its `resources.limits.memory`. The Linux kernel's OOM killer terminated the process (SIGKILL = exit code 137). Memory, unlike CPU, cannot be throttled - exceeding the limit always means the process is killed.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - look for `Reason: OOMKilled` and `Exit Code: 137` under Last State.\n2. Compare the container's memory **limit** in the Deployment with what the workload needs (application config, e.g. JVM heap `-Xmx`, worker buffer sizes, `--vm-bytes`, batch size).\n3. If metrics-server is installed: `kubectl top pod <pod>` to watch real usage.\n\n**Common causes:**\n- Memory limit set too low for the real workload.\n- A memory leak that grows until the limit.\n- JVM / runtime heap configured larger than the container limit.\n- Processing a large batch/file fully in memory.\n\n**Fix:**\n- If the workload legitimately needs the memory: raise `resources.limits.memory` (and set `requests.memory` close to typical usage) to comfortably above peak usage, e.g. 20-30% headroom.\n- If it is a leak: raising the limit only delays the crash - profile and fix the code.\n\n**Prevention:** Load-test to measure peak memory; set requests/limits from real data; alert on memory usage above 80-90% of the limit.\n"
+     },
+     {
+      "runbook": "evicted-node-pressure.md",
+      "title": "Runbook: Evicted pods / node pressure",
+      "similarity": 0.68,
+      "content": "# Runbook: Evicted pods / node pressure\n\n**Symptoms:** Pods with STATUS `Evicted` (or `Error` with reason Evicted); message like `The node was low on resource: memory` or `ephemeral-storage`.\n\n**What it means:** The kubelet evicted pods to protect the node when it ran low on memory, disk or PIDs. Pods with no requests (BestEffort QoS) are evicted first.\n\n**How to confirm:** `kubectl describe pod <pod>` (Status/Message); `kubectl describe node <node>` (Conditions: MemoryPressure, DiskPressure).\n\n**Fix:** Set realistic requests/limits so pods get Burstable/Guaranteed QoS; clean up disk (logs, images); add node capacity. Delete leftover evicted pods once the cause is fixed.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 743
+  },
+  {
+   "type": "tool_call",
+   "step": 3,
+   "name": "search_runbooks",
+   "args": {
+    "query": "Insufficient cpu scheduling failed"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 3,
+   "name": "search_runbooks",
+   "result": {
+    "query": "Insufficient cpu scheduling failed",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "pending-unschedulable.md",
+      "title": "Runbook: Pod stuck in Pending (Unschedulable)",
+      "similarity": 0.708,
+      "content": "# Runbook: Pod stuck in Pending (Unschedulable)\n\n**Symptoms:** Pod STATUS is `Pending` for a long time, no node assigned (NODE column is `<none>`). No restarts, no logs.\n\n**What it means:** The scheduler cannot find any node that satisfies the pod's requirements, so the pod is never placed on a node.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - the `FailedScheduling` event explains why, e.g. `0/1 nodes are available: 1 Insufficient cpu` or `Insufficient memory`, `node(s) had untolerated taint`, `didn't match Pod's node affinity/selector`, or `pod has unbound immediate PersistentVolumeClaims`.\n2. Compare the pod's `resources.requests` with node capacity: `kubectl describe node` (Allocatable section).\n\n**Common causes:**\n- Resource **requests** larger than any node can offer (e.g. `cpu: \"32\"` on a 4-8 core node - often a units mistake: `32` means 32 cores, `32m` means 0.032 cores).\n- Cluster is full; requests exceed remaining allocatable capacity.\n- nodeSelector / affinity / taints that no node matches.\n- PersistentVolumeClaim that cannot be bound.\n\n**Fix:**\n- Lower `resources.requests` to what the app really needs (e.g. `cpu: 100m` = 0.1 core) and re-apply.\n- Or add capacity (bigger/more nodes, cluster autoscaler).\n- Fix selectors/tolerations if scheduling constraints are wrong.\n\n**Prevention:** Review resource requests in code review; use LimitRange / ResourceQuota to cap per-pod requests in a namespace.\n"
+     },
+     {
+      "runbook": "oomkilled.md",
+      "title": "Runbook: OOMKilled (Out Of Memory)",
+      "similarity": 0.639,
+      "content": "# Runbook: OOMKilled (Out Of Memory)\n\n**Symptoms:** Pod restarts repeatedly, often shown as `CrashLoopBackOff` or `OOMKilled`. `kubectl describe pod` shows `Last State: Terminated, Reason: OOMKilled, Exit Code: 137`.\n\n**What it means:** The container tried to use more memory than its `resources.limits.memory`. The Linux kernel's OOM killer terminated the process (SIGKILL = exit code 137). Memory, unlike CPU, cannot be throttled - exceeding the limit always means the process is killed.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - look for `Reason: OOMKilled` and `Exit Code: 137` under Last State.\n2. Compare the container's memory **limit** in the Deployment with what the workload needs (application config, e.g. JVM heap `-Xmx`, worker buffer sizes, `--vm-bytes`, batch size).\n3. If metrics-server is installed: `kubectl top pod <pod>` to watch real usage.\n\n**Common causes:**\n- Memory limit set too low for the real workload.\n- A memory leak that grows until the limit.\n- JVM / runtime heap configured larger than the container limit.\n- Processing a large batch/file fully in memory.\n\n**Fix:**\n- If the workload legitimately needs the memory: raise `resources.limits.memory` (and set `requests.memory` close to typical usage) to comfortably above peak usage, e.g. 20-30% headroom.\n- If it is a leak: raising the limit only delays the crash - profile and fix the code.\n\n**Prevention:** Load-test to measure peak memory; set requests/limits from real data; alert on memory usage above 80-90% of the limit.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 442
+  },
+  {
+   "type": "tool_call",
+   "step": 3,
+   "name": "search_runbooks",
+   "args": {
+    "query": "ConfigMap not found CreateContainerConfigError"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 3,
+   "name": "search_runbooks",
+   "result": {
+    "query": "ConfigMap not found CreateContainerConfigError",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "createcontainerconfigerror.md",
+      "title": "Runbook: CreateContainerConfigError (missing ConfigMap or Secret)",
+      "similarity": 0.794,
+      "content": "# Runbook: CreateContainerConfigError (missing ConfigMap or Secret)\n\n**Symptoms:** Pod STATUS is `CreateContainerConfigError`. READY 0/1, RESTARTS 0. No logs, because the container was never created.\n\n**What it means:** Kubernetes could not build the container configuration. The most common reason is that the pod references a **ConfigMap or Secret that does not exist** (or a key inside it that does not exist), via `env.valueFrom`, `envFrom`, or a volume.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - Events show a message like `Error: configmap \"<name>\" not found` or `secret \"<name>\" not found` or `couldn't find key X in ConfigMap`.\n2. `kubectl get configmap -n <namespace>` / `kubectl get secret -n <namespace>` - check whether it exists **in the same namespace** as the pod (ConfigMaps/Secrets are namespace-scoped).\n3. Check the Deployment's `envFrom` / `valueFrom` references for typos.\n\n**Common causes:**\n- The ConfigMap/Secret was never created (forgotten in the release, or created in a different namespace).\n- Typo in the referenced name or key.\n- Deploy order: the app was deployed before its configuration.\n\n**Fix:**\n- Create the missing ConfigMap/Secret in the correct namespace (`kubectl create configmap <name> --from-literal=KEY=value -n <ns>` or apply a YAML manifest), and the kubelet will start the container automatically on its next retry.\n- Or fix the reference name in the Deployment.\n- If the config is genuinely optional, mark the reference `optional: true`.\n\n**Prevention:** Ship ConfigMaps/Secrets in the same Helm chart / kustomization as the Deployment.\n"
+     },
+     {
+      "runbook": "imagepullbackoff.md",
+      "title": "Runbook: ImagePullBackOff / ErrImagePull",
+      "similarity": 0.667,
+      "content": "# Runbook: ImagePullBackOff / ErrImagePull\n\n**Symptoms:** Pod STATUS is `ErrImagePull` and then `ImagePullBackOff`. The container never starts, so there are no logs.\n\n**What it means:** The kubelet on the node could not download the container image. Kubernetes retries with a back-off.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - read the Events at the bottom. Typical messages:\n   - `manifest unknown` / `not found` -> the image name or **tag does not exist** (very often a typo).\n   - `pull access denied` / `unauthorized` -> the image is private and credentials are missing.\n   - `i/o timeout` / `no such host` -> the node cannot reach the registry (network/DNS/proxy).\n2. Compare the image in the Deployment spec with the tags that really exist in the registry.\n\n**Common causes:**\n- Typo in the image name or tag (e.g. `alpne` instead of `alpine`, `lates` instead of `latest`).\n- Tag was deleted or never pushed by CI.\n- Private registry without an `imagePullSecrets` entry.\n- Registry rate limits (Docker Hub anonymous pulls).\n\n**Fix:**\n- Correct the `image:` field in the Deployment and re-apply, or `kubectl set image deployment/<name> <container>=<correct-image>`.\n- For private images, create a docker-registry Secret and reference it under `spec.template.spec.imagePullSecrets`.\n\n**Prevention:** Pin images by immutable tag or digest produced by CI; validate that the image exists before deploying.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 408
+  },
+  {
+   "type": "tool_call",
+   "step": 3,
+   "name": "search_runbooks",
+   "args": {
+    "query": "ImagePullBackOff invalid image name"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 3,
+   "name": "search_runbooks",
+   "result": {
+    "query": "ImagePullBackOff invalid image name",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "imagepullbackoff.md",
+      "title": "Runbook: ImagePullBackOff / ErrImagePull",
+      "similarity": 0.762,
+      "content": "# Runbook: ImagePullBackOff / ErrImagePull\n\n**Symptoms:** Pod STATUS is `ErrImagePull` and then `ImagePullBackOff`. The container never starts, so there are no logs.\n\n**What it means:** The kubelet on the node could not download the container image. Kubernetes retries with a back-off.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - read the Events at the bottom. Typical messages:\n   - `manifest unknown` / `not found` -> the image name or **tag does not exist** (very often a typo).\n   - `pull access denied` / `unauthorized` -> the image is private and credentials are missing.\n   - `i/o timeout` / `no such host` -> the node cannot reach the registry (network/DNS/proxy).\n2. Compare the image in the Deployment spec with the tags that really exist in the registry.\n\n**Common causes:**\n- Typo in the image name or tag (e.g. `alpne` instead of `alpine`, `lates` instead of `latest`).\n- Tag was deleted or never pushed by CI.\n- Private registry without an `imagePullSecrets` entry.\n- Registry rate limits (Docker Hub anonymous pulls).\n\n**Fix:**\n- Correct the `image:` field in the Deployment and re-apply, or `kubectl set image deployment/<name> <container>=<correct-image>`.\n- For private images, create a docker-registry Secret and reference it under `spec.template.spec.imagePullSecrets`.\n\n**Prevention:** Pin images by immutable tag or digest produced by CI; validate that the image exists before deploying.\n"
+     },
+     {
+      "runbook": "createcontainerconfigerror.md",
+      "title": "Runbook: CreateContainerConfigError (missing ConfigMap or Secret)",
+      "similarity": 0.671,
+      "content": "# Runbook: CreateContainerConfigError (missing ConfigMap or Secret)\n\n**Symptoms:** Pod STATUS is `CreateContainerConfigError`. READY 0/1, RESTARTS 0. No logs, because the container was never created.\n\n**What it means:** Kubernetes could not build the container configuration. The most common reason is that the pod references a **ConfigMap or Secret that does not exist** (or a key inside it that does not exist), via `env.valueFrom`, `envFrom`, or a volume.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - Events show a message like `Error: configmap \"<name>\" not found` or `secret \"<name>\" not found` or `couldn't find key X in ConfigMap`.\n2. `kubectl get configmap -n <namespace>` / `kubectl get secret -n <namespace>` - check whether it exists **in the same namespace** as the pod (ConfigMaps/Secrets are namespace-scoped).\n3. Check the Deployment's `envFrom` / `valueFrom` references for typos.\n\n**Common causes:**\n- The ConfigMap/Secret was never created (forgotten in the release, or created in a different namespace).\n- Typo in the referenced name or key.\n- Deploy order: the app was deployed before its configuration.\n\n**Fix:**\n- Create the missing ConfigMap/Secret in the correct namespace (`kubectl create configmap <name> --from-literal=KEY=value -n <ns>` or apply a YAML manifest), and the kubelet will start the container automatically on its next retry.\n- Or fix the reference name in the Deployment.\n- If the config is genuinely optional, mark the reference `optional: true`.\n\n**Prevention:** Ship ConfigMaps/Secrets in the same Helm chart / kustomization as the Deployment.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 495
+  },
+  {
+   "type": "tool_call",
+   "step": 4,
+   "name": "search_runbooks",
+   "args": {
+    "query": "readiness probe failed connection refused port"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 4,
+   "name": "search_runbooks",
+   "result": {
+    "query": "readiness probe failed connection refused port",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "readiness-probe-failing.md",
+      "title": "Runbook: Running but not Ready (readiness probe failing)",
+      "similarity": 0.778,
+      "content": "# Runbook: Running but not Ready (readiness probe failing)\n\n**Symptoms:** Pod STATUS is `Running`, RESTARTS 0, but READY is `0/1`. The Service that selects these pods receives no traffic; users see 503s or connection errors through the Service/Ingress.\n\n**What it means:** The container process is alive, but its **readiness probe** keeps failing, so Kubernetes removes the pod from the Service endpoints. Readiness failures do NOT restart the container (that is the liveness probe's job), which is why this failure is easy to miss - the pod \"looks\" fine at a glance.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - Events show `Readiness probe failed: ...`. Typical messages: `connection refused` (wrong port or app not listening), `HTTP probe failed with statuscode: 404` (wrong path), `context deadline exceeded` (app too slow / timeout too short).\n2. Compare the probe's `port` and `path` with the port the container actually listens on (`containerPort`, application config).\n3. `kubectl get endpoints <service>` - an empty endpoints list confirms no pod is receiving traffic.\n\n**Common causes:**\n- Probe points at the wrong port (e.g. 8080 while the server listens on 80).\n- Probe path does not exist (`/healthz` not implemented).\n- Timeout or initialDelaySeconds too short for a slow-starting app.\n- A dependency checked by the readiness endpoint is down.\n\n**Fix:**\n- Correct `readinessProbe.httpGet.port` / `path` in the Deployment to match the application, and re-apply.\n- Tune `initialDelaySeconds`, `timeoutSeconds`, `failureThreshold` for slow starters.\n\n**Prevention:** Use named ports (`port: http`) in probes so probe and container port cannot drift apart.\n"
+     },
+     {
+      "runbook": "liveness-probe-restarts.md",
+      "title": "Runbook: Restarts caused by a failing liveness probe",
+      "similarity": 0.715,
+      "content": "# Runbook: Restarts caused by a failing liveness probe\n\n**Symptoms:** RESTARTS increases steadily; logs look normal right up to the restart; `describe` shows `Liveness probe failed` events followed by `Container ... failed liveness probe, will be restarted`. Last State reason is usually `Error` or `Completed` with exit code 137/143.\n\n**What it means:** The kubelet decided the container was unhealthy and killed it. Unlike an app crash, the app itself did not choose to exit.\n\n**How to confirm:** `kubectl describe pod <pod>` events; compare probe port/path/timeouts with the app.\n\n**Common causes:** Wrong probe port/path; `initialDelaySeconds` shorter than startup time; probe timeout too strict under load; liveness endpoint checking downstream dependencies (one database blip restarts every pod).\n\n**Fix:** Correct port/path; add a `startupProbe` for slow-starting apps; make liveness checks cheap and local (do not check dependencies in liveness).\n\n**Prevention:** Keep liveness simple; use readiness for dependency checks.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 514
+  },
+  {
+   "type": "tool_call",
+   "step": 4,
+   "name": "search_runbooks",
+   "args": {
+    "query": "container exit code 1 missing environment variable"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 4,
+   "name": "search_runbooks",
+   "result": {
+    "query": "container exit code 1 missing environment variable",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "createcontainerconfigerror.md",
+      "title": "Runbook: CreateContainerConfigError (missing ConfigMap or Secret)",
+      "similarity": 0.722,
+      "content": "# Runbook: CreateContainerConfigError (missing ConfigMap or Secret)\n\n**Symptoms:** Pod STATUS is `CreateContainerConfigError`. READY 0/1, RESTARTS 0. No logs, because the container was never created.\n\n**What it means:** Kubernetes could not build the container configuration. The most common reason is that the pod references a **ConfigMap or Secret that does not exist** (or a key inside it that does not exist), via `env.valueFrom`, `envFrom`, or a volume.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - Events show a message like `Error: configmap \"<name>\" not found` or `secret \"<name>\" not found` or `couldn't find key X in ConfigMap`.\n2. `kubectl get configmap -n <namespace>` / `kubectl get secret -n <namespace>` - check whether it exists **in the same namespace** as the pod (ConfigMaps/Secrets are namespace-scoped).\n3. Check the Deployment's `envFrom` / `valueFrom` references for typos.\n\n**Common causes:**\n- The ConfigMap/Secret was never created (forgotten in the release, or created in a different namespace).\n- Typo in the referenced name or key.\n- Deploy order: the app was deployed before its configuration.\n\n**Fix:**\n- Create the missing ConfigMap/Secret in the correct namespace (`kubectl create configmap <name> --from-literal=KEY=value -n <ns>` or apply a YAML manifest), and the kubelet will start the container automatically on its next retry.\n- Or fix the reference name in the Deployment.\n- If the config is genuinely optional, mark the reference `optional: true`.\n\n**Prevention:** Ship ConfigMaps/Secrets in the same Helm chart / kustomization as the Deployment.\n"
+     },
+     {
+      "runbook": "exit-codes.md",
+      "title": "Reference: Container exit codes",
+      "similarity": 0.696,
+      "content": "# Reference: Container exit codes\n\nUse the `Exit Code` from `kubectl describe pod` (Last State: Terminated) to classify a crash:\n\n| Exit code | Meaning | Typical cause |\n|---|---|---|\n| 0 | Process finished successfully | Container ran a one-off command; in a Deployment this causes restarts because Deployments expect long-running processes (use a Job instead) |\n| 1 | Generic application error | App threw an error at startup: missing config/env var, bad arguments, failed dependency connection |\n| 2 | Misuse of shell builtin / bad CLI args | Wrong command arguments |\n| 126 | Command cannot execute | Permission problem, not executable |\n| 127 | Command not found | Wrong `command`/entrypoint, binary missing from image |\n| 137 | SIGKILL (128+9) | OOMKilled (check Reason), or killed by liveness probe / eviction |\n| 139 | SIGSEGV (128+11) | Segmentation fault in native code |\n| 143 | SIGTERM (128+15) | Graceful termination requested (rolling update, scale down, probe kill) |\n\nRule of thumb: exit code 1 -> read the logs (`kubectl logs --previous`); exit code 137 -> check Reason for OOMKilled and compare memory limits.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 509
+  },
+  {
+   "type": "notice",
+   "text": "Self-review found gaps in the draft report: You did not read the previous (crashed) container logs for: report-worker-69b4468dd9-bpwns. Call get_pod_logs with previous=true for them. Sending it back to the agent to fix."
+  },
+  {
+   "type": "tool_call",
+   "step": 6,
+   "name": "get_pod_logs",
+   "args": {
+    "namespace": "shop",
+    "previous": true,
+    "pod_name": "report-worker-69b4468dd9-bpwns"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 6,
+   "name": "get_pod_logs",
+   "result": {
+    "pod": "report-worker-69b4468dd9-bpwns",
+    "previous": true,
+    "logs": "stress: info: [1] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd\n"
+   },
+   "ok": true,
+   "ms": 190
+  },
+  {
+   "type": "final",
+   "text": "## Incident summary\nThe `shop` namespace contains six unhealthy pods experiencing various issues ranging from missing configuration and image pull errors to resource exhaustion and probe misconfigurations.\n\n| Service | Symptom | Root cause | Severity (High/Medium/Low) |\n|---|---|---|---|\n| `auth-service` | `CreateContainerConfigError` | Missing ConfigMap `auth-config` referenced by the pod spec | High |\n| `inventory-service` | `ImagePullBackOff` | Typo in container image tag (`nginx:1.27-alpne`) | High |\n| `orders-api` | `Running`, `0/1` Ready | Readiness probe checks port 8080 while container listens on port 80 | Medium |\n| `payment-api` | `Error`, Exit Code 1, `CrashLoopBackOff` | Missing required environment variable `DATABASE_URL` causing app exit | High |\n| `report-worker` | `OOMKilled`, Exit Code 137, `CrashLoopBackOff` | Memory limit (`100Mi`) is lower than the stress workload requirement (`250M`) | High |\n| `search-api` | `Pending (Unschedulable)` | CPU request (`32`) exceeds allocatable node capacity | High |\n\n---\n\n## Findings\n\n### `auth-service` - CreateContainerConfigError\n- **Evidence:** `describe_pod` shows Events: `Warning Failed 4m43s kubelet spec.containers{auth}: Error: configmap \"auth-config\" not found`.\n- **Root cause:** The deployment references a ConfigMap named `auth-config` which does not exist in the `shop` namespace.\n- **Fix:** Create the missing ConfigMap or correct the Deployment reference:\n  ```yaml\n  apiVersion: v1\n  kind: ConfigMap\n  metadata:\n    name: auth-config\n    namespace: shop\n  data:\n    ENV: production\n  ```\n- **Runbook:** `createcontainerconfigerror.md`\n\n### `inventory-service` - ImagePullBackOff\n- **Evidence:** `describe_pod` shows Events: `Warning Failed kubelet spec.containers{inventory}: Error: ImagePullBackOff` and `Back-off pulling image \"nginx:1.27-alpne\"`.\n- **Root cause:** There is a typo in the container image tag (`1.27-alpne` instead of `1.27-alpine`).\n- **Fix:** Correct the image tag in the deployment spec:\n  ```yaml\n  image: nginx:1.27-alpine\n  ```\n- **Runbook:** `imagepullbackoff.md`\n\n### `orders-api` - Running (Not Ready)\n- **Evidence:** `describe_pod` shows Events: `Warning Unhealthy kubelet spec.containers{orders}: Readiness probe failed: Get \"http://10.244.0.7:8080/\": dial tcp 10.244.0.7:8080: connect: connection refused`.\n- **Root cause:** The readiness probe is configured to query port `8080`, but the container is listening on port `80`.\n- **Fix:** Update the readiness probe port to match the container port:\n  ```yaml\n  readinessProbe:\n    httpGet:\n      port: 80\n      path: /\n  ```\n- **Runbook:** `readiness-probe-failing.md`\n\n### `payment-api` - Error (Exit Code 1)\n- **Evidence:** `describe_pod` shows the container args execute a check: `if [ -z \"$DATABASE_URL\" ]; then echo \"FATAL: required environment variable DATABASE_URL is not set\" >&2; exit 1; fi`.\n- **Root cause:** The container exits with code 1 because the required `DATABASE_URL` environment variable is not set.\n- **Fix:** Add the missing environment variable to the Deployment spec:\n  ```yaml\n  env:\n    - name: DATABASE_URL\n      value: postgresql://user:pass@postgres:5432/shop\n  ```\n- **Runbook:** `exit-codes.md`\n\n### `report-worker` - OOMKilled (Exit Code 137)\n- **Evidence:** `get_pod_logs` (previous) shows `stress: info: [1] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd` and `describe_pod` shows `Last State: Terminated, Reason: OOMKilled, Exit Code: 137` for a workload allocating `250M` against a `100Mi` limit.\n- **Root cause:** The container's memory limit is set to `100Mi`, but the workload attempts to allocate `250M`, triggering the kernel OOM killer.\n- **Fix:** Increase the container's memory limit above the required workload usage:\n  ```yaml\n  resources:\n    limits:\n      memory: 300Mi\n    requests:\n      memory: 150Mi\n  ```\n- **Runbook:** `oomkilled.md`\n\n### `search-api` - Pending (Unschedulable)\n- **Evidence:** `describe_pod` shows Events: `Warning FailedScheduling default-scheduler: 0/1 nodes are available: 1 Insufficient cpu`.\n- **Root cause:** The pod requests `32` CPU cores, which exceeds the allocatable capacity of the single node.\n- **Fix:** Reduce the CPU request to fit the node's capacity:\n  ```yaml\n  resources:\n    requests:\n      cpu: 100m\n    limits:\n      cpu: 500m\n  ```\n- **Runbook:** `pending-unschedulable.md`\n\n---\n\n## Healthy services\n- `web-frontend`: Both pods are Running and Ready (`1/1`), with zero restarts.\n\n---\n\n## Next steps\n1. Implement CI/CD image tag validation to prevent typos (like `alpne`) from being deployed.\n2. Introduce admission controllers or validation webhooks (such as OPA Gatekeeper or ValidatingAdmissionPolicy) to enforce resource requests/limits and prevent pods from requesting CPU/memory beyond node capacities.\n3. Standardize configuration management by utilizing Helm or Kustomization templates to ensure ConfigMaps and Secrets are deployed alongside their dependent workloads."
+  },
+  {
+   "type": "citation_check",
+   "cited": [
+    "createcontainerconfigerror.md",
+    "exit-codes.md",
+    "imagepullbackoff.md",
+    "oomkilled.md",
+    "pending-unschedulable.md",
+    "readiness-probe-failing.md"
+   ],
+   "verified": [
+    "createcontainerconfigerror.md",
+    "exit-codes.md",
+    "imagepullbackoff.md",
+    "oomkilled.md",
+    "pending-unschedulable.md",
+    "readiness-probe-failing.md"
+   ],
+   "unverified": [],
+   "retrieved": [
+    "createcontainerconfigerror.md",
+    "evicted-node-pressure.md",
+    "exit-codes.md",
+    "imagepullbackoff.md",
+    "liveness-probe-restarts.md",
+    "oomkilled.md",
+    "pending-unschedulable.md",
+    "readiness-probe-failing.md"
+   ]
+  },
+  {
+   "type": "stats",
+   "model": "gemini-3.5-flash-lite",
+   "tool_calls": 15,
+   "seconds": 22.0
+  }
+ ]
+}

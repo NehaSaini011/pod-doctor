@@ -17,6 +17,9 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from pod_doctor import config  # noqa: E402,F401  (also adds Docker/winget folders to PATH on Windows)
+
 CLUSTER_NAME = "pod-doctor"
 CONTEXT = f"kind-{CLUSTER_NAME}"
 NAMESPACE = "shop"
@@ -46,8 +49,8 @@ def kubectl(*args, **kw):
 
 def check_tools():
     missing = [t for t in ("docker", "kind", "kubectl") if shutil.which(t) is None]
-    for tool in missing:
-        print(f"[missing] {tool}: {INSTALL_HINTS[tool]}")
+    for tool in ("docker", "kind", "kubectl"):
+        print(f"[{'missing' if tool in missing else 'found':7s}] {tool}: {shutil.which(tool) or INSTALL_HINTS[tool]}")
     if missing:
         sys.exit("Install the missing tools above, open a NEW terminal, and run this again.")
     if subprocess.run(["docker", "info"], capture_output=True).returncode != 0:

@@ -40,6 +40,7 @@ Three concepts from the internship, all in one project:
    4. Record the result in `events`.
 8. Append all tool results to `contents` as one message (each result tagged with its call's id).
 9. Increase `step` by 1.
+9b. (Self-review) When the model gives a draft report in step 5, first check it with `review_report`. If it has gaps and hasn't been sent back before, append the draft plus a message listing the gaps to `contents` and go back to step 3, instead of finishing.
 10. If `step` is at most `MAX_AGENT_STEPS` (15), go to step 3. Otherwise stop with "step limit reached". This guard stops infinite loops.
 11. Save `events` to `runs/<timestamp>.json` for replay.
 
@@ -99,6 +100,12 @@ I wanted every line to be explainable. The loop is about 60 lines using Gemini's
 **Q: How do you stop the agent from hallucinating a root cause?**
 Three ways. The system prompt requires every root cause to quote evidence from tool output. The runbooks give it a grounded fix procedure. And the trace is shown to the user, so every claim can be checked against the raw tool results.
 
+**Q: How do you know the runbook citations are real?**
+After every report, the app runs a citation check (`check_citations` in `agent.py`). It collects every runbook file the report cites and compares them with the runbooks `search_runbooks` actually returned during that run. If the model names a source it never retrieved, the UI shows a warning. Grounding is verified in code, not just requested in the prompt.
+
+**Q: What happens if the agent cuts corners?**
+There's a self-review step (`review_report` in `agent.py`), a pattern known as *reflection*. When the agent produces a draft report, code checks it for gaps: findings with no retrieved runbook, citations that were never retrieved, and restarting pods whose crash logs were never read. If it finds any, the draft goes back to the agent with the list of problems, and the agent uses its tools again and rewrites the report (at most once, so it can't loop forever). I added it after noticing in testing that the smallest model skipped runbook searches for 4 of 6 services.
+
 **Q: What is function calling?**
 Each tool is declared to the model with a name, a description and a JSON schema for its parameters. Instead of text, the model can reply with a structured request like `{"name": "describe_pod", "args": {"pod_name": "..."}}`. My code executes it and sends the result back. The model never runs anything itself.
 
@@ -124,7 +131,7 @@ The agent is. Every question triggers real Gemini calls, real tool calls and rea
 A "propose fix → human approves → apply → verify" loop; Prometheus metrics as a tool; triggering the agent automatically from an alert; evaluating accuracy over many injected failures.
 
 **Q: How did you evaluate it?**
-There are 6 injected failures with known root causes, listed in the cluster table in the README, so I can check whether the agent's report names the right root cause for each one. I also wrote 21 offline tests: the tools against simulated kubectl output, input validation, Secret redaction, retrieval returning the correct runbook for each failure type, and snapshot mode.
+There are 6 injected failures with known root causes, listed in the cluster table in the README, so I can check whether the agent's report names the right root cause for each one. I also wrote 25 offline tests: the tools against simulated kubectl output, input validation, Secret redaction, retrieval returning the correct runbook for each failure type, and snapshot mode.
 
 ---
 

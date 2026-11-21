@@ -98,7 +98,7 @@ python -m pod_doctor.cli "Why is report-worker restarting?"
 ```powershell
 python tests/test_pod_doctor.py
 ```
-There are 21 checks: the tools parse each failure type correctly, injection attempts are rejected, Secret values stay hidden, RAG retrieves the right runbook for each of the 6 failures, and snapshot mode replays the recorded cluster correctly.
+There are 25 checks: the tools parse each failure type correctly, injection attempts are rejected, Secret values stay hidden, RAG retrieves the right runbook for each of the 6 failures, the citation check and self-review catch ungrounded reports, and snapshot mode replays the recorded cluster correctly.
 
 ## Demo script (for the presentation)
 
@@ -116,7 +116,7 @@ There are 21 checks: the tools parse each failure type correctly, injection atte
 |---|---|
 | `kind`/`kubectl` not found | Open a new terminal after `winget install`. |
 | "Docker is installed but not running" | Start Docker Desktop. |
-| `404 model not found` | Set `GEMINI_MODEL` in `.env` to a current Flash model from https://ai.google.dev/gemini-api/docs/models |
+| `404 model not found` or `503 busy` | The agent switches to the backup models in `FALLBACK_MODELS` automatically. To change the main one, set `GEMINI_MODEL` in `.env` to a current Flash model from https://ai.google.dev/gemini-api/docs/models |
 | `429` quota errors | Free-tier rate limit. The agent retries automatically; wait a minute, or ask about one service instead of all of them. |
 | Pods stuck in `ContainerCreating` | Images are still downloading. Wait, then run `python scripts/cluster.py status`. |
 | Retrieval backend shows "tf-idf" | The embedding call failed (no key or no network). RAG still works with keyword vectors. |
