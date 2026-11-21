@@ -171,8 +171,11 @@ def summarise_pod(pod):
 
 def list_contexts():
     """Every cluster context in your kubeconfig (live mode only)."""
-    result = subprocess.run(["kubectl", "config", "get-contexts", "-o", "name"], capture_output=True,
-                            text=True, encoding="utf-8", errors="replace", timeout=15)
+    try:
+        result = subprocess.run(["kubectl", "config", "get-contexts", "-o", "name"], capture_output=True,
+                                text=True, encoding="utf-8", errors="replace", timeout=15)
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        raise ToolError("kubectl is not installed or not responding.")
     if result.returncode != 0:
         raise ToolError(result.stderr.strip() or "Could not read kubeconfig contexts.")
     return [c for c in result.stdout.split() if c]

@@ -61,7 +61,14 @@ MAX_TOOL_OUTPUT_CHARS = 6000                                # truncate huge kube
 
 # "live"     -> run real kubectl against KUBE_CONTEXT (your laptop)
 # "snapshot" -> answer from a recorded snapshot of the cluster (the deployed website)
-CLUSTER_MODE = _get("CLUSTER_MODE", "live").lower()
+# "auto"     -> pick automatically (see below)
+# "auto" (default): live if kubectl is installed, otherwise snapshot. So the deployed website,
+# which has no kubectl, uses the snapshot even if CLUSTER_MODE was never set.
+CLUSTER_MODE = _get("CLUSTER_MODE", "auto").lower()
+if CLUSTER_MODE not in ("live", "snapshot"):
+    import shutil
+
+    CLUSTER_MODE = "live" if shutil.which("kubectl") else "snapshot"
 SNAPSHOT_FILE = ROOT / "data" / "cluster_snapshot.json"
 
 # Protection for the public website (set these as secrets when deploying).
