@@ -1,6 +1,6 @@
 # Deploying Pod Doctor to a public URL
 
-You'll get a link like `https://pod-doctor.streamlit.app`. Evaluators can open it and ask the agent anything.
+You'll get a link like `https://pod-doctor.streamlit.app`. Evaluators can open it and ask the agent anything, or paste output from their own cluster in the second tab.
 
 **How the deployed version works.** A public website can't reach the kind cluster on your laptop. So you record a **snapshot** of the real cluster once, and the website's tools read from that recording. **The agent loop, the Gemini calls and the RAG search are all live.** Only the cluster data is recorded, and the app shows a banner saying so.
 

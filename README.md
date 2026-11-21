@@ -14,6 +14,12 @@ The demo cluster runs a small "shop" made of microservices: **1 healthy service 
 | search-api | requests 32 CPU cores | Pending (Unschedulable) |
 | orders-api | readiness probe on wrong port | Running but **0/1 Ready** (the sneaky one) |
 
+## Three ways to use it
+
+1. **Diagnose a cluster.** Ask in plain English; the agent investigates with read-only `kubectl` tools. In the sidebar you can pick **any cluster (kube context) and namespace** your `kubectl` can see.
+2. **🧪 Break it yourself** (live demo cluster only). Pick a Deployment and one of 7 faults (bad image tag, missing ConfigMap, missing Secret, wrong readiness port, failing liveness probe, impossible CPU request, broken start command). The panel breaks it; the agent has to find what changed **without being told**. Reveal the answer and **Undo** with one click.
+3. **📋 Analyze your own kubectl output.** Paste `kubectl describe` / `logs` / `events` from any cluster; the agent analyzes it with the same runbooks. Works on the deployed website, no credentials needed.
+
 ## Architecture
 
 ```mermaid
@@ -34,9 +40,11 @@ flowchart LR
 ## Project structure
 
 ```
-app.py                  Streamlit web UI (cluster health table + live agent trace + report)
+app.py                  Streamlit web UI: cluster tab (health, fault panel, agent) + paste tab
 pod_doctor/
-  agent.py              the agent loop (Gemini function calling, step limit, run saving)
+  agent.py              the agent loop: modes, model failover, self-review, citation check
+  chaos.py              'Break it yourself' fault injection (guarded, never an agent tool)
+  samples.py            example kubectl output for the paste tab
   tools.py              tool registry: descriptions + JSON schemas the LLM sees
   k8s_tools.py          read-only kubectl wrappers with input validation
   rag.py                RAG retrieval: Gemini embeddings (TF-IDF offline fallback)
@@ -98,7 +106,7 @@ python -m pod_doctor.cli "Why is report-worker restarting?"
 ```powershell
 python tests/test_pod_doctor.py
 ```
-There are 25 checks: the tools parse each failure type correctly, injection attempts are rejected, Secret values stay hidden, RAG retrieves the right runbook for each of the 6 failures, the citation check and self-review catch ungrounded reports, and snapshot mode replays the recorded cluster correctly.
+There are 36 checks: the tools parse each failure type correctly, injection attempts are rejected, Secret values stay hidden, RAG retrieves the right runbook for each of the 6 failures, the citation check and self-review catch ungrounded reports, all 7 faults break a Deployment as intended without leaving hints, fault injection is refused outside the demo cluster, and snapshot mode replays the recorded cluster correctly.
 
 ## Demo script (for the presentation)
 

@@ -1,0 +1,282 @@
+{
+ "question": "Something is wrong with web-frontend. Find out what and how to fix it.",
+ "mode": "cluster",
+ "model": "gemini-3.5-flash-lite",
+ "events": [
+  {
+   "type": "tool_call",
+   "step": 1,
+   "name": "list_pods",
+   "args": {
+    "namespace": "shop"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 1,
+   "name": "list_pods",
+   "result": {
+    "namespace": "shop",
+    "pod_count": 9,
+    "unhealthy_pods": [
+     "auth-service-7f66bfdbcb-l9g2z",
+     "inventory-service-64f57b7fd9-qdf54",
+     "orders-api-5c596455f4-9gd9l",
+     "payment-api-859f8d44f9-9rwfc",
+     "report-worker-69b4468dd9-bpwns",
+     "search-api-d7d455497-s76bx",
+     "web-frontend-bfbb8dd64-tqhwn"
+    ],
+    "pods": [
+     {
+      "pod": "auth-service-7f66bfdbcb-l9g2z",
+      "app": "auth-service",
+      "status": "CreateContainerConfigError",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "inventory-service-64f57b7fd9-qdf54",
+      "app": "inventory-service",
+      "status": "ImagePullBackOff",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "orders-api-5c596455f4-9gd9l",
+      "app": "orders-api",
+      "status": "Running",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "payment-api-859f8d44f9-9rwfc",
+      "app": "payment-api",
+      "status": "CrashLoopBackOff",
+      "ready": "0/1",
+      "restarts": 21,
+      "last_termination": {
+       "reason": "Error",
+       "exit_code": 1
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "report-worker-69b4468dd9-bpwns",
+      "app": "report-worker",
+      "status": "OOMKilled",
+      "ready": "0/1",
+      "restarts": 22,
+      "last_termination": {
+       "reason": "OOMKilled",
+       "exit_code": 137
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "search-api-d7d455497-s76bx",
+      "app": "search-api",
+      "status": "Pending (Unschedulable)",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "<none>",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "web-frontend-5cf4c554fc-kxxzg",
+      "app": "web-frontend",
+      "status": "Running",
+      "ready": "1/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": true
+     },
+     {
+      "pod": "web-frontend-5cf4c554fc-prfsw",
+      "app": "web-frontend",
+      "status": "Running",
+      "ready": "1/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": true
+     },
+     {
+      "pod": "web-frontend-bfbb8dd64-tqhwn",
+      "app": "web-frontend",
+      "status": "ImagePullBackOff",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "9m",
+      "healthy": false
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 158
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "namespace": "shop",
+    "pod_name": "web-frontend-bfbb8dd64-tqhwn"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "web-frontend-bfbb8dd64-tqhwn",
+    "describe": "Name:             web-frontend-bfbb8dd64-tqhwn\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             pod-doctor-control-plane/172.19.0.2\nStart Time:       Sat, 21 Nov 2026 23:57:16 +0530\nLabels:           app=web-frontend\n                  pod-template-hash=bfbb8dd64\nAnnotations:      <none>\nStatus:           Pending\nIP:               10.244.0.12\nIPs:\n  IP:           10.244.0.12\nControlled By:  ReplicaSet/web-frontend-bfbb8dd64\nContainers:\n  web:\n    Container ID:   \n    Image:          nginx:1.27-alpinee\n    Image ID:       \n    Port:           80/TCP\n    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       ImagePullBackOff\n    Ready:          False\n    Restart Count:  0\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:        50m\n      memory:     32Mi\n    Readiness:    http-get http://:80/ delay=2s timeout=1s period=5s #success=1 #failure=3\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jsr6b (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-jsr6b:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason     Age                     From               Message\n  ----     ------     ----                    ----               -------\n  Normal   Scheduled  9m39s                   default-scheduler  Successfully assigned shop/web-frontend-bfbb8dd64-tqhwn to pod-doctor-control-plane\n  Normal   Pulling    6m16s (x5 over 9m38s)   kubelet            spec.containers{web}: Pulling image \"nginx:1.27-alpinee\"\n  Warning  Failed     6m15s (x5 over 9m36s)   kubelet            spec.containers{web}: Failed to pull image \"nginx:1.27-alpinee\": rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/nginx:1.27-alpinee\": failed to resolve reference \"docker.io/library/nginx:1.27-alpinee\": docker.io/library/nginx:1.27-alpinee: not found\n  Warning  Failed     6m15s (x5 over 9m36s)   kubelet            spec.containers{web}: Error: ErrImagePull\n  Normal   BackOff    3m43s (x21 over 9m36s)  kubelet            spec.containers{web}: Back-off pulling image \"nginx:1.27-alpinee\"\n  Warning  Failed     3m43s (x21 over 9m36s)  kubelet            spec.containers{web}: Error: ImagePullBackOff\n"
+   },
+   "ok": true,
+   "ms": 163
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "get_events",
+   "args": {
+    "object_name": "web-frontend-bfbb8dd64-tqhwn",
+    "namespace": "shop"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "get_events",
+   "result": {
+    "namespace": "shop",
+    "events": [
+     {
+      "type": "Warning",
+      "reason": "Failed",
+      "object": "Pod/web-frontend-bfbb8dd64-tqhwn",
+      "count": 5,
+      "message": "Failed to pull image \"nginx:1.27-alpinee\": rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/nginx:1.27-alpinee\": failed to resolve reference \"docker.io/library/nginx:1.27-alpinee\": docker.io/library/nginx:1.27-alpinee: not found"
+     },
+     {
+      "type": "Warning",
+      "reason": "Failed",
+      "object": "Pod/web-frontend-bfbb8dd64-tqhwn",
+      "count": 5,
+      "message": "Error: ErrImagePull"
+     },
+     {
+      "type": "Warning",
+      "reason": "Failed",
+      "object": "Pod/web-frontend-bfbb8dd64-tqhwn",
+      "count": 21,
+      "message": "Error: ImagePullBackOff"
+     },
+     {
+      "type": "Normal",
+      "reason": "Scheduled",
+      "object": "Pod/web-frontend-bfbb8dd64-tqhwn",
+      "count": 1,
+      "message": "Successfully assigned shop/web-frontend-bfbb8dd64-tqhwn to pod-doctor-control-plane"
+     },
+     {
+      "type": "Normal",
+      "reason": "Pulling",
+      "object": "Pod/web-frontend-bfbb8dd64-tqhwn",
+      "count": 5,
+      "message": "Pulling image \"nginx:1.27-alpinee\""
+     },
+     {
+      "type": "Normal",
+      "reason": "BackOff",
+      "object": "Pod/web-frontend-bfbb8dd64-tqhwn",
+      "count": 21,
+      "message": "Back-off pulling image \"nginx:1.27-alpinee\""
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 146
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "search_runbooks",
+   "args": {
+    "query": "ImagePullBackOff"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "search_runbooks",
+   "result": {
+    "query": "ImagePullBackOff",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "imagepullbackoff.md",
+      "title": "Runbook: ImagePullBackOff / ErrImagePull",
+      "similarity": 0.788,
+      "content": "# Runbook: ImagePullBackOff / ErrImagePull\n\n**Symptoms:** Pod STATUS is `ErrImagePull` and then `ImagePullBackOff`. The container never starts, so there are no logs.\n\n**What it means:** The kubelet on the node could not download the container image. Kubernetes retries with a back-off.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - read the Events at the bottom. Typical messages:\n   - `manifest unknown` / `not found` -> the image name or **tag does not exist** (very often a typo).\n   - `pull access denied` / `unauthorized` -> the image is private and credentials are missing.\n   - `i/o timeout` / `no such host` -> the node cannot reach the registry (network/DNS/proxy).\n2. Compare the image in the Deployment spec with the tags that really exist in the registry.\n\n**Common causes:**\n- Typo in the image name or tag (e.g. `alpne` instead of `alpine`, `lates` instead of `latest`).\n- Tag was deleted or never pushed by CI.\n- Private registry without an `imagePullSecrets` entry.\n- Registry rate limits (Docker Hub anonymous pulls).\n\n**Fix:**\n- Correct the `image:` field in the Deployment and re-apply, or `kubectl set image deployment/<name> <container>=<correct-image>`.\n- For private images, create a docker-registry Secret and reference it under `spec.template.spec.imagePullSecrets`.\n\n**Prevention:** Pin images by immutable tag or digest produced by CI; validate that the image exists before deploying.\n"
+     },
+     {
+      "runbook": "crashloopbackoff.md",
+      "title": "Runbook: CrashLoopBackOff",
+      "similarity": 0.703,
+      "content": "# Runbook: CrashLoopBackOff\n\n**Symptoms:** Pod STATUS shows `CrashLoopBackOff`. RESTARTS keeps increasing. READY is 0/1.\n\n**What it means:** The container starts, then exits (or is killed), and Kubernetes keeps restarting it with an increasing back-off delay (10s, 20s, 40s ... up to 5 minutes). CrashLoopBackOff is a *symptom*, not a root cause. The real cause is whatever makes the process exit.\n\n**How to confirm the root cause:**\n1. `kubectl logs <pod> --previous` - logs of the crashed attempt. Look at the last lines before exit.\n2. `kubectl describe pod <pod>` - check `Last State: Terminated`, its `Reason` and `Exit Code`.\n3. Interpret the exit code: 1 = application error, 137 = killed by SIGKILL (often OOMKilled), 139 = segfault, 127 = command not found, 126 = command not executable.\n\n**Common causes:**\n- Missing or wrong environment variable / config (app validates config at startup and exits).\n- Cannot reach a dependency (database, cache) and the app exits instead of retrying.\n- Wrong `command` / `args` in the Deployment.\n- Memory limit too low (Last State reason `OOMKilled`, exit code 137) - see the OOMKilled runbook.\n- Liveness probe failing and killing a healthy-but-slow container.\n\n**Fix:**\n- Missing env var: add it to the Deployment under `spec.template.spec.containers[].env`, ideally sourced from a Secret (`valueFrom.secretKeyRef`) for credentials such as database URLs.\n- Then `kubectl apply -f <file>`; the Deployment rolls out a new pod.\n\n**Prevention:** Validate required configuration in CI; use `kubectl apply --dry-run=server`; keep config in ConfigMaps/Secrets that are deployed together with the app.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 1194
+  },
+  {
+   "type": "final",
+   "text": "## Incident summary\nThe `web-frontend` deployment has a pod failing to pull its container image due to a tag typo, resulting in `ImagePullBackOff`.\n\n| Service | Symptom | Root cause | Severity (High/Medium/Low) |\n| :--- | :--- | :--- | :--- |\n| web-frontend | ImagePullBackOff / ErrImagePull | Typo in container image tag (`nginx:1.27-alpinee`) | High |\n\n## Findings\n### web-frontend - ImagePullBackOff\n- **Evidence:** `describe_pod` shows:\n  ```\n  Containers:\n    web:\n      Image:          nginx:1.27-alpinee\n      State:          Waiting\n        Reason:       ImagePullBackOff\n  Events:\n    Warning  Failed  ...  spec.containers{web}: Failed to pull image \"nginx:1.27-alpinee\": rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/nginx:1.27-alpinee\": failed to resolve reference \"docker.io/library/nginx:1.27-alpinee\": docker.io/library/nginx:1.27-alpinee: not found\n  ```\n- **Root cause:** The container image tag contains a typo (`nginx:1.27-alpinee` instead of `nginx:1.27-alpine`), causing the container runtime to fail to resolve and pull the image from Docker Hub.\n- **Fix:** Update the image tag in the deployment spec to a valid tag, e.g.:\n  ```yaml\n  spec:\n    containers:\n    - name: web\n      image: nginx:1.27-alpine\n  ```\n  Or run:\n  ```bash\n  kubectl set image deployment/web-frontend web=nginx:1.27-alpine -n shop\n  ```\n- **Runbook:** `imagepullbackoff.md`\n\n## Healthy services\n- `web-frontend` has two older replicas (`web-frontend-5cf4c554fc-kxxzg` and `web-frontend-5cf4c554fc-prfsw`) running successfully and serving traffic.\n\n## Next steps\n1. Implement CI/CD image existence checks before updating Kubernetes manifests.\n2. Adopt admission controllers or policy checks (e.g., OPA Gatekeeper / Kyverno) to validate container images against known registries/tags.\n3. Use immutable image tags or digests in manifests."
+  },
+  {
+   "type": "citation_check",
+   "cited": [
+    "imagepullbackoff.md"
+   ],
+   "verified": [
+    "imagepullbackoff.md"
+   ],
+   "unverified": [],
+   "retrieved": [
+    "crashloopbackoff.md",
+    "imagepullbackoff.md"
+   ]
+  },
+  {
+   "type": "stats",
+   "model": "gemini-3.5-flash-lite",
+   "tool_calls": 4,
+   "seconds": 7.4
+  }
+ ]
+}

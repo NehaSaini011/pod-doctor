@@ -15,7 +15,7 @@ def search_runbooks(query, top_k=2):
     return {"query": query, "backend": get_index().backend, "results": hits}
 
 
-NS = {"type": "string", "description": f"Kubernetes namespace. Default '{config.DEFAULT_NAMESPACE}'."}
+NS = {"type": "string", "description": "Kubernetes namespace. Omit it to use the namespace selected in the app."}
 
 TOOLS = {
     "list_pods": {
@@ -92,11 +92,13 @@ TOOLS = {
 }
 
 
-def call_tool(name, args):
+def call_tool(name, args, allowed=None):
     """Run a tool by name. Errors are returned to the model as data (so it can recover),
-    never raised - an agent should be able to see and react to its own mistakes."""
-    if name not in TOOLS:
-        return {"error": f"Unknown tool '{name}'. Available: {list(TOOLS)}"}
+    never raised - an agent should be able to see and react to its own mistakes.
+    `allowed` restricts which tools this agent mode may use."""
+    allowed = allowed or list(TOOLS)
+    if name not in TOOLS or name not in allowed:
+        return {"error": f"Unknown or unavailable tool '{name}'. Available: {list(allowed)}"}
     try:
         return TOOLS[name]["fn"](**(args or {}))
     except k8s_tools.ToolError as exc:

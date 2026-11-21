@@ -1,0 +1,320 @@
+{
+ "question": "Something is wrong with web-frontend. Find out what and how to fix it.",
+ "mode": "cluster",
+ "model": "gemini-3.5-flash-lite",
+ "events": [
+  {
+   "type": "tool_call",
+   "step": 1,
+   "name": "list_pods",
+   "args": {
+    "namespace": "shop"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 1,
+   "name": "list_pods",
+   "result": {
+    "namespace": "shop",
+    "pod_count": 8,
+    "unhealthy_pods": [
+     "auth-service-7f66bfdbcb-l9g2z",
+     "inventory-service-64f57b7fd9-qdf54",
+     "orders-api-5c596455f4-9gd9l",
+     "payment-api-859f8d44f9-9rwfc",
+     "report-worker-69b4468dd9-bpwns",
+     "search-api-d7d455497-s76bx",
+     "web-frontend-5f8d97dddb-ljx26",
+     "web-frontend-5f8d97dddb-xkgv5"
+    ],
+    "pods": [
+     {
+      "pod": "auth-service-7f66bfdbcb-l9g2z",
+      "app": "auth-service",
+      "status": "CreateContainerConfigError",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "inventory-service-64f57b7fd9-qdf54",
+      "app": "inventory-service",
+      "status": "ImagePullBackOff",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "orders-api-5c596455f4-9gd9l",
+      "app": "orders-api",
+      "status": "Running",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "payment-api-859f8d44f9-9rwfc",
+      "app": "payment-api",
+      "status": "Error",
+      "ready": "0/1",
+      "restarts": 23,
+      "last_termination": {
+       "reason": "Error",
+       "exit_code": 1
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "report-worker-69b4468dd9-bpwns",
+      "app": "report-worker",
+      "status": "CrashLoopBackOff",
+      "ready": "0/1",
+      "restarts": 23,
+      "last_termination": {
+       "reason": "OOMKilled",
+       "exit_code": 137
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "search-api-d7d455497-s76bx",
+      "app": "search-api",
+      "status": "Pending (Unschedulable)",
+      "ready": "0/1",
+      "restarts": 0,
+      "last_termination": null,
+      "node": "<none>",
+      "age": "1h",
+      "healthy": false
+     },
+     {
+      "pod": "web-frontend-5f8d97dddb-ljx26",
+      "app": "web-frontend",
+      "status": "CrashLoopBackOff",
+      "ready": "0/1",
+      "restarts": 4,
+      "last_termination": {
+       "reason": "Completed",
+       "exit_code": 0
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1m",
+      "healthy": false
+     },
+     {
+      "pod": "web-frontend-5f8d97dddb-xkgv5",
+      "app": "web-frontend",
+      "status": "CrashLoopBackOff",
+      "ready": "0/1",
+      "restarts": 4,
+      "last_termination": {
+       "reason": "Completed",
+       "exit_code": 0
+      },
+      "node": "pod-doctor-control-plane",
+      "age": "1m",
+      "healthy": false
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 194
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "describe_pod",
+   "args": {
+    "namespace": "shop",
+    "pod_name": "web-frontend-5f8d97dddb-ljx26"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "describe_pod",
+   "result": {
+    "pod": "web-frontend-5f8d97dddb-ljx26",
+    "describe": "Name:             web-frontend-5f8d97dddb-ljx26\nNamespace:        shop\nPriority:         0\nService Account:  default\nNode:             pod-doctor-control-plane/172.19.0.2\nStart Time:       Sun, 22 Nov 2026 00:12:09 +0530\nLabels:           app=web-frontend\n                  pod-template-hash=5f8d97dddb\nAnnotations:      <none>\nStatus:           Running\nIP:               10.244.0.14\nIPs:\n  IP:           10.244.0.14\nControlled By:  ReplicaSet/web-frontend-5f8d97dddb\nContainers:\n  web:\n    Container ID:   containerd://7232a64b268207c0b1b9725f36ceec152584bff331c0bf86a298dac3560daec6\n    Image:          nginx:1.27-alpine\n    Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10\n    Port:           80/TCP\n    Host Port:      0/TCP\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Completed\n      Exit Code:    0\n      Started:      Sun, 22 Nov 2026 00:13:19 +0530\n      Finished:     Sun, 22 Nov 2026 00:13:26 +0530\n    Ready:          False\n    Restart Count:  4\n    Limits:\n      cpu:     200m\n      memory:  128Mi\n    Requests:\n      cpu:        50m\n      memory:     32Mi\n    Liveness:     http-get http://:80/healthz delay=3s timeout=1s period=3s #success=1 #failure=2\n    Readiness:    http-get http://:80/ delay=2s timeout=1s period=5s #success=1 #failure=3\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kswx4 (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       False \n  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-kswx4:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type     Reason     Age                 From               Message\n  ----     ------     ----                ----               -------\n  Normal   Scheduled  95s                 default-scheduler  Successfully assigned shop/web-frontend-5f8d97dddb-ljx26 to pod-doctor-control-plane\n  Normal   Pulled     25s (x5 over 94s)   kubelet            spec.containers{web}: Container image \"nginx:1.27-alpine\" already present on machine and can be accessed by the pod\n  Normal   Created    25s (x5 over 94s)   kubelet            spec.containers{web}: Container created\n  Normal   Started    25s (x5 over 93s)   kubelet            spec.containers{web}: Container started\n  Warning  Unhealthy  18s (x10 over 88s)  kubelet            spec.containers{web}: Liveness probe failed: HTTP probe failed with statuscode: 404\n  Normal   Killing    18s (x5 over 85s)   kubelet            spec.containers{web}: Container web failed liveness probe, will be restarted\n  Warning  BackOff    12s (x9 over 73s)   kubelet            spec.containers{web}: Back-off restarting failed container web in pod web-frontend-5f8d97dddb-ljx26_shop(be87815d-8a6f-4f8b-985d-25d5e00ad783)\n"
+   },
+   "ok": true,
+   "ms": 260
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "get_pod_logs",
+   "args": {
+    "namespace": "shop",
+    "pod_name": "web-frontend-5f8d97dddb-ljx26",
+    "previous": true
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "get_pod_logs",
+   "result": {
+    "pod": "web-frontend-5f8d97dddb-ljx26",
+    "previous": true,
+    "logs": "2026/11/21 18:43:26 [notice] 35#35: exit\n2026/11/21 18:43:26 [notice] 36#36: exit\n2026/11/21 18:43:26 [notice] 44#44: exit\n2026/11/21 18:43:26 [notice] 40#40: gracefully shutting down\n2026/11/21 18:43:26 [notice] 40#40: exiting\n2026/11/21 18:43:26 [notice] 42#42: gracefully shutting down\n2026/11/21 18:43:26 [notice] 40#40: exit\n2026/11/21 18:43:26 [notice] 42#42: exiting\n2026/11/21 18:43:26 [notice] 42#42: exit\n2026/11/21 18:43:26 [notice] 37#37: exit\n2026/11/21 18:43:26 [notice] 45#45: gracefully shutting down\n2026/11/21 18:43:26 [notice] 45#45: exiting\n2026/11/21 18:43:26 [notice] 43#43: gracefully shutting down\n2026/11/21 18:43:26 [notice] 43#43: exiting\n2026/11/21 18:43:26 [notice] 45#45: exit\n2026/11/21 18:43:26 [notice] 43#43: exit\n2026/11/21 18:43:26 [notice] 1#1: signal 17 (SIGCHLD) received from 34\n2026/11/21 18:43:26 [notice] 1#1: worker process 34 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: worker process 35 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: worker process 36 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: worker process 40 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: worker process 42 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:43:26 [notice] 1#1: signal 17 (SIGCHLD) received from 41\n2026/11/21 18:43:26 [notice] 1#1: worker process 37 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: worker process 39 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: worker process 41 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:43:26 [notice] 1#1: signal 17 (SIGCHLD) received from 43\n2026/11/21 18:43:26 [notice] 1#1: worker process 43 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:43:26 [notice] 1#1: signal 17 (SIGCHLD) received from 38\n2026/11/21 18:43:26 [notice] 1#1: worker process 38 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:43:26 [notice] 1#1: signal 17 (SIGCHLD) received from 45\n2026/11/21 18:43:26 [notice] 1#1: worker process 45 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:43:26 [notice] 1#1: signal 17 (SIGCHLD) received from 44\n2026/11/21 18:43:26 [notice] 1#1: worker process 44 exited with code 0\n2026/11/21 18:43:26 [notice] 1#1: exit\n"
+   },
+   "ok": true,
+   "ms": 248
+  },
+  {
+   "type": "tool_call",
+   "step": 2,
+   "name": "search_runbooks",
+   "args": {
+    "query": "exit code 0 completed crashloopbackoff"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 2,
+   "name": "search_runbooks",
+   "result": {
+    "query": "exit code 0 completed crashloopbackoff",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "crashloopbackoff.md",
+      "title": "Runbook: CrashLoopBackOff",
+      "similarity": 0.765,
+      "content": "# Runbook: CrashLoopBackOff\n\n**Symptoms:** Pod STATUS shows `CrashLoopBackOff`. RESTARTS keeps increasing. READY is 0/1.\n\n**What it means:** The container starts, then exits (or is killed), and Kubernetes keeps restarting it with an increasing back-off delay (10s, 20s, 40s ... up to 5 minutes). CrashLoopBackOff is a *symptom*, not a root cause. The real cause is whatever makes the process exit.\n\n**How to confirm the root cause:**\n1. `kubectl logs <pod> --previous` - logs of the crashed attempt. Look at the last lines before exit.\n2. `kubectl describe pod <pod>` - check `Last State: Terminated`, its `Reason` and `Exit Code`.\n3. Interpret the exit code: 1 = application error, 137 = killed by SIGKILL (often OOMKilled), 139 = segfault, 127 = command not found, 126 = command not executable.\n\n**Common causes:**\n- Missing or wrong environment variable / config (app validates config at startup and exits).\n- Cannot reach a dependency (database, cache) and the app exits instead of retrying.\n- Wrong `command` / `args` in the Deployment.\n- Memory limit too low (Last State reason `OOMKilled`, exit code 137) - see the OOMKilled runbook.\n- Liveness probe failing and killing a healthy-but-slow container.\n\n**Fix:**\n- Missing env var: add it to the Deployment under `spec.template.spec.containers[].env`, ideally sourced from a Secret (`valueFrom.secretKeyRef`) for credentials such as database URLs.\n- Then `kubectl apply -f <file>`; the Deployment rolls out a new pod.\n\n**Prevention:** Validate required configuration in CI; use `kubectl apply --dry-run=server`; keep config in ConfigMaps/Secrets that are deployed together with the app.\n"
+     },
+     {
+      "runbook": "exit-codes.md",
+      "title": "Reference: Container exit codes",
+      "similarity": 0.741,
+      "content": "# Reference: Container exit codes\n\nUse the `Exit Code` from `kubectl describe pod` (Last State: Terminated) to classify a crash:\n\n| Exit code | Meaning | Typical cause |\n|---|---|---|\n| 0 | Process finished successfully | Container ran a one-off command; in a Deployment this causes restarts because Deployments expect long-running processes (use a Job instead) |\n| 1 | Generic application error | App threw an error at startup: missing config/env var, bad arguments, failed dependency connection |\n| 2 | Misuse of shell builtin / bad CLI args | Wrong command arguments |\n| 126 | Command cannot execute | Permission problem, not executable |\n| 127 | Command not found | Wrong `command`/entrypoint, binary missing from image |\n| 137 | SIGKILL (128+9) | OOMKilled (check Reason), or killed by liveness probe / eviction |\n| 139 | SIGSEGV (128+11) | Segmentation fault in native code |\n| 143 | SIGTERM (128+15) | Graceful termination requested (rolling update, scale down, probe kill) |\n\nRule of thumb: exit code 1 -> read the logs (`kubectl logs --previous`); exit code 137 -> check Reason for OOMKilled and compare memory limits.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 512
+  },
+  {
+   "type": "tool_call",
+   "step": 3,
+   "name": "search_runbooks",
+   "args": {
+    "query": "liveness probe HTTP probe failed statuscode 404"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 3,
+   "name": "search_runbooks",
+   "result": {
+    "query": "liveness probe HTTP probe failed statuscode 404",
+    "backend": "gemini (gemini-embedding-001)",
+    "results": [
+     {
+      "runbook": "liveness-probe-restarts.md",
+      "title": "Runbook: Restarts caused by a failing liveness probe",
+      "similarity": 0.742,
+      "content": "# Runbook: Restarts caused by a failing liveness probe\n\n**Symptoms:** RESTARTS increases steadily; logs look normal right up to the restart; `describe` shows `Liveness probe failed` events followed by `Container ... failed liveness probe, will be restarted`. Last State reason is usually `Error` or `Completed` with exit code 137/143.\n\n**What it means:** The kubelet decided the container was unhealthy and killed it. Unlike an app crash, the app itself did not choose to exit.\n\n**How to confirm:** `kubectl describe pod <pod>` events; compare probe port/path/timeouts with the app.\n\n**Common causes:** Wrong probe port/path; `initialDelaySeconds` shorter than startup time; probe timeout too strict under load; liveness endpoint checking downstream dependencies (one database blip restarts every pod).\n\n**Fix:** Correct port/path; add a `startupProbe` for slow-starting apps; make liveness checks cheap and local (do not check dependencies in liveness).\n\n**Prevention:** Keep liveness simple; use readiness for dependency checks.\n"
+     },
+     {
+      "runbook": "readiness-probe-failing.md",
+      "title": "Runbook: Running but not Ready (readiness probe failing)",
+      "similarity": 0.73,
+      "content": "# Runbook: Running but not Ready (readiness probe failing)\n\n**Symptoms:** Pod STATUS is `Running`, RESTARTS 0, but READY is `0/1`. The Service that selects these pods receives no traffic; users see 503s or connection errors through the Service/Ingress.\n\n**What it means:** The container process is alive, but its **readiness probe** keeps failing, so Kubernetes removes the pod from the Service endpoints. Readiness failures do NOT restart the container (that is the liveness probe's job), which is why this failure is easy to miss - the pod \"looks\" fine at a glance.\n\n**How to confirm:**\n1. `kubectl describe pod <pod>` - Events show `Readiness probe failed: ...`. Typical messages: `connection refused` (wrong port or app not listening), `HTTP probe failed with statuscode: 404` (wrong path), `context deadline exceeded` (app too slow / timeout too short).\n2. Compare the probe's `port` and `path` with the port the container actually listens on (`containerPort`, application config).\n3. `kubectl get endpoints <service>` - an empty endpoints list confirms no pod is receiving traffic.\n\n**Common causes:**\n- Probe points at the wrong port (e.g. 8080 while the server listens on 80).\n- Probe path does not exist (`/healthz` not implemented).\n- Timeout or initialDelaySeconds too short for a slow-starting app.\n- A dependency checked by the readiness endpoint is down.\n\n**Fix:**\n- Correct `readinessProbe.httpGet.port` / `path` in the Deployment to match the application, and re-apply.\n- Tune `initialDelaySeconds`, `timeoutSeconds`, `failureThreshold` for slow starters.\n\n**Prevention:** Use named ports (`port: http`) in probes so probe and container port cannot drift apart.\n"
+     }
+    ]
+   },
+   "ok": true,
+   "ms": 532
+  },
+  {
+   "type": "tool_call",
+   "step": 4,
+   "name": "get_resource",
+   "args": {
+    "namespace": "shop",
+    "name": "web-frontend",
+    "kind": "deployment"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 4,
+   "name": "get_resource",
+   "result": {
+    "kind": "deployment",
+    "name": "web-frontend",
+    "spec": "{\n \"apiVersion\": \"apps/v1\",\n \"kind\": \"Deployment\",\n \"metadata\": {\n  \"annotations\": {\n   \"deployment.kubernetes.io/revision\": \"4\"\n  },\n  \"creationTimestamp\": \"2026-11-21T17:04:53Z\",\n  \"generation\": 4,\n  \"labels\": {\n   \"app\": \"web-frontend\"\n  },\n  \"name\": \"web-frontend\",\n  \"namespace\": \"shop\",\n  \"resourceVersion\": \"9191\",\n  \"uid\": \"77d6b416-1cd5-42cd-95d9-016321fdd002\"\n },\n \"spec\": {\n  \"progressDeadlineSeconds\": 600,\n  \"replicas\": 2,\n  \"revisionHistoryLimit\": 10,\n  \"selector\": {\n   \"matchLabels\": {\n    \"app\": \"web-frontend\"\n   }\n  },\n  \"strategy\": {\n   \"rollingUpdate\": {\n    \"maxSurge\": \"25%\",\n    \"maxUnavailable\": \"25%\"\n   },\n   \"type\": \"RollingUpdate\"\n  },\n  \"template\": {\n   \"metadata\": {\n    \"labels\": {\n     \"app\": \"web-frontend\"\n    }\n   },\n   \"spec\": {\n    \"containers\": [\n     {\n      \"image\": \"nginx:1.27-alpine\",\n      \"imagePullPolicy\": \"IfNotPresent\",\n      \"livenessProbe\": {\n       \"failureThreshold\": 2,\n       \"httpGet\": {\n        \"path\": \"/healthz\",\n        \"port\": 80,\n        \"scheme\": \"HTTP\"\n       },\n       \"initialDelaySeconds\": 3,\n       \"periodSeconds\": 3,\n       \"successThreshold\": 1,\n       \"timeoutSeconds\": 1\n      },\n      \"name\": \"web\",\n      \"ports\": [\n       {\n        \"containerPort\": 80,\n        \"protocol\": \"TCP\"\n       }\n      ],\n      \"readinessProbe\": {\n       \"failureThreshold\": 3,\n       \"httpGet\": {\n        \"path\": \"/\",\n        \"port\": 80,\n        \"scheme\": \"HTTP\"\n       },\n       \"initialDelaySeconds\": 2,\n       \"periodSeconds\": 5,\n       \"successThreshold\": 1,\n       \"timeoutSeconds\": 1\n      },\n      \"resources\": {\n       \"limits\": {\n        \"cpu\": \"200m\",\n        \"memory\": \"128Mi\"\n       },\n       \"requests\": {\n        \"cpu\": \"50m\",\n        \"memory\": \"32Mi\"\n       }\n      },\n      \"terminationMessagePath\": \"/dev/termination-log\",\n      \"terminationMessagePolicy\": \"File\"\n     }\n    ],\n    \"dnsPolicy\": \"ClusterFirst\",\n    \"restartPolicy\": \"Always\",\n    \"schedulerName\": \"default-scheduler\",\n    \"securityContext\": {},\n    \"terminationGracePeriodSeconds\": 30\n   }\n  }\n }\n}"
+   },
+   "ok": true,
+   "ms": 155
+  },
+  {
+   "type": "notice",
+   "text": "Self-review found gaps in the draft report: You did not read the previous (crashed) container logs for: web-frontend-5f8d97dddb-xkgv5. Call get_pod_logs with previous=true for them. Sending it back to the agent to fix."
+  },
+  {
+   "type": "tool_call",
+   "step": 6,
+   "name": "get_pod_logs",
+   "args": {
+    "namespace": "shop",
+    "previous": true,
+    "pod_name": "web-frontend-5f8d97dddb-xkgv5"
+   }
+  },
+  {
+   "type": "tool_result",
+   "step": 6,
+   "name": "get_pod_logs",
+   "result": {
+    "pod": "web-frontend-5f8d97dddb-xkgv5",
+    "previous": true,
+    "logs": "2026/11/21 18:42:57 [notice] 38#38: gracefully shutting down\n2026/11/21 18:42:57 [notice] 38#38: exiting\n2026/11/21 18:42:57 [notice] 38#38: exit\n2026/11/21 18:42:57 [notice] 39#39: gracefully shutting down\n2026/11/21 18:42:57 [notice] 39#39: exiting\n2026/11/21 18:42:57 [notice] 40#40: gracefully shutting down\n2026/11/21 18:42:57 [notice] 40#40: exiting\n2026/11/21 18:42:57 [notice] 40#40: exit\n2026/11/21 18:42:57 [notice] 39#39: exit\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 40\n2026/11/21 18:42:57 [notice] 1#1: worker process 37 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: worker process 40 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:42:57 [notice] 43#43: gracefully shutting down\n2026/11/21 18:42:57 [notice] 43#43: exiting\n2026/11/21 18:42:57 [notice] 43#43: exit\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 44\n2026/11/21 18:42:57 [notice] 1#1: worker process 34 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: worker process 44 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 45\n2026/11/21 18:42:57 [notice] 1#1: worker process 45 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 35\n2026/11/21 18:42:57 [notice] 1#1: worker process 35 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: worker process 36 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: worker process 38 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 42\n2026/11/21 18:42:57 [notice] 1#1: worker process 42 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 41\n2026/11/21 18:42:57 [notice] 1#1: worker process 41 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 39\n2026/11/21 18:42:57 [notice] 1#1: worker process 39 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: signal 29 (SIGIO) received\n2026/11/21 18:42:57 [notice] 1#1: signal 17 (SIGCHLD) received from 43\n2026/11/21 18:42:57 [notice] 1#1: worker process 43 exited with code 0\n2026/11/21 18:42:57 [notice] 1#1: exit\n"
+   },
+   "ok": true,
+   "ms": 192
+  },
+  {
+   "type": "final",
+   "text": "## Incident summary\nThe `web-frontend` deployment is experiencing a CrashLoopBackOff due to liveness probe failures caused by querying an incorrect health check path (`/healthz`) on the standard Nginx container.\n\n| Service | Symptom | Root cause | Severity (High/Medium/Low) |\n|---|---|---|---|\n| `web-frontend` | CrashLoopBackOff with increasing restarts | Liveness probe checks `/healthz` which returns a 404 status code on standard Nginx, causing Kubernetes to repeatedly kill the container | Medium |\n\n## Findings\n### web-frontend - CrashLoopBackOff\n- **Evidence:** `describe_pod` shows:\n  - `Last State: Terminated (Reason: Completed, Exit Code: 0)`\n  - Events: `Warning Unhealthy ... spec.containers{web}: Liveness probe failed: HTTP probe failed with statuscode: 404`\n  - `get_pod_logs` with `previous=true` for `web-frontend-5f8d97dddb-ljx26` and `web-frontend-5f8d97dddb-xkgv5` shows normal Nginx shutdown notices right up to the termination point without internal application errors.\n  - `get_resource` for Deployment `web-frontend` confirms the liveness probe is configured with `path: /healthz` on port 80 using the standard `nginx:1.27-alpine` image.\n- **Root cause:** The Nginx container starts and runs successfully, but its liveness probe is configured to query `/healthz`. Because standard Nginx does not serve a `/healthz` endpoint by default, it returns a 404 error, leading the kubelet to kill the container repeatedly.\n- **Fix:** Update the liveness probe path in the `web-frontend` deployment to match an existing endpoint (such as `/`) or configure a valid health check location in Nginx:\n  ```yaml\n  spec:\n    template:\n      spec:\n        containers:\n          - name: web\n            livenessProbe:\n              httpGet:\n                path: /\n                port: 80\n  ```\n- **Runbook:** `liveness-probe-restarts.md`\n\n## Healthy services\nNone evaluated (scoped to `web-frontend`).\n\n## Next steps\n1. Validate liveness and readiness probe paths against application routes prior to deployment.\n2. Configure explicit health endpoints in web server configurations or application code rather than defaulting to root paths or missing endpoints.\n3. Utilize named ports in container and probe definitions to prevent port mismatch configurations."
+  },
+  {
+   "type": "citation_check",
+   "cited": [
+    "liveness-probe-restarts.md"
+   ],
+   "verified": [
+    "liveness-probe-restarts.md"
+   ],
+   "unverified": [],
+   "retrieved": [
+    "crashloopbackoff.md",
+    "exit-codes.md",
+    "liveness-probe-restarts.md",
+    "readiness-probe-failing.md"
+   ]
+  },
+  {
+   "type": "stats",
+   "model": "gemini-3.5-flash-lite",
+   "tool_calls": 7,
+   "seconds": 17.5
+  }
+ ]
+}

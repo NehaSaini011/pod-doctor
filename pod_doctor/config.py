@@ -51,6 +51,10 @@ EMBED_MODEL = _get("EMBED_MODEL", "gemini-embedding-001")
 KUBE_CONTEXT = _get("KUBE_CONTEXT", "kind-pod-doctor")
 DEFAULT_NAMESPACE = _get("NAMESPACE", "shop")
 
+# The ONLY cluster/namespace the "Break it yourself" panel may change (never your real clusters).
+CHAOS_CONTEXT = _get("CHAOS_CONTEXT", "kind-pod-doctor")
+CHAOS_NAMESPACE = _get("CHAOS_NAMESPACE", "shop")
+
 # Safety limits for the agent loop.
 MAX_AGENT_STEPS = int(_get("MAX_AGENT_STEPS", "15"))   # model turns
 MAX_TOOL_OUTPUT_CHARS = 6000                                # truncate huge kubectl output

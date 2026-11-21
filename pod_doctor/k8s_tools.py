@@ -166,11 +166,30 @@ def summarise_pod(pod):
     }
 
 
+# ------------------------------------------------------------------ discovery (for the UI picker)
+
+
+def list_contexts():
+    """Every cluster context in your kubeconfig (live mode only)."""
+    result = subprocess.run(["kubectl", "config", "get-contexts", "-o", "name"], capture_output=True,
+                            text=True, encoding="utf-8", errors="replace", timeout=15)
+    if result.returncode != 0:
+        raise ToolError(result.stderr.strip() or "Could not read kubeconfig contexts.")
+    return [c for c in result.stdout.split() if c]
+
+
+def list_namespaces():
+    """Namespaces in the currently selected context."""
+    data = json.loads(_kubectl(["get", "namespaces", "-o", "json"], timeout=15))
+    return [n["metadata"]["name"] for n in data.get("items", [])]
+
+
 # ------------------------------------------------------------------ tools
 
 
-def list_pods(namespace=config.DEFAULT_NAMESPACE):
+def list_pods(namespace=None):
     """Overview of every pod in a namespace with its health status."""
+    namespace = namespace or config.DEFAULT_NAMESPACE
     _check_name(namespace, "namespace")
     data = json.loads(_kubectl(["get", "pods", "-n", namespace, "-o", "json"]))
     pods = [summarise_pod(p) for p in data.get("items", [])]
@@ -178,15 +197,17 @@ def list_pods(namespace=config.DEFAULT_NAMESPACE):
     return {"namespace": namespace, "pod_count": len(pods), "unhealthy_pods": unhealthy, "pods": pods}
 
 
-def describe_pod(pod_name, namespace=config.DEFAULT_NAMESPACE):
+def describe_pod(pod_name, namespace=None):
     """Full `kubectl describe pod` text: container state, last state, exit codes, probes, events."""
+    namespace = namespace or config.DEFAULT_NAMESPACE
     _check_name(pod_name, "pod_name")
     _check_name(namespace, "namespace")
     return {"pod": pod_name, "describe": _trim(_kubectl(["describe", "pod", pod_name, "-n", namespace]))}
 
 
-def get_pod_logs(pod_name, namespace=config.DEFAULT_NAMESPACE, previous=False, tail_lines=40):
+def get_pod_logs(pod_name, namespace=None, previous=False, tail_lines=40):
     """Last lines of a container's logs. previous=True reads the crashed attempt."""
+    namespace = namespace or config.DEFAULT_NAMESPACE
     _check_name(pod_name, "pod_name")
     _check_name(namespace, "namespace")
     tail = max(1, min(int(tail_lines), 200))
@@ -201,8 +222,9 @@ def get_pod_logs(pod_name, namespace=config.DEFAULT_NAMESPACE, previous=False, t
     return {"pod": pod_name, "previous": previous, "logs": _trim(logs) or "(no log output)"}
 
 
-def get_events(namespace=config.DEFAULT_NAMESPACE, object_name=None):
+def get_events(namespace=None, object_name=None):
     """Recent Kubernetes events (warnings first), optionally only for one object."""
+    namespace = namespace or config.DEFAULT_NAMESPACE
     _check_name(namespace, "namespace")
     args = ["get", "events", "-n", namespace, "-o", "json"]
     if object_name:
@@ -230,9 +252,10 @@ def _clean(obj):
     return obj
 
 
-def get_resource(kind, name=None, namespace=config.DEFAULT_NAMESPACE):
+def get_resource(kind, name=None, namespace=None):
     """Read one resource's spec (or list all of a kind). Kinds: deployment, service,
     configmap, secret (key names only), node, endpoints."""
+    namespace = namespace or config.DEFAULT_NAMESPACE
     kind = (kind or "").lower().strip()
     kind = KIND_ALIASES.get(kind, kind)
     if kind not in ALLOWED_KINDS:

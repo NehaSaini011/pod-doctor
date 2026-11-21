@@ -106,6 +106,12 @@ After every report, the app runs a citation check (`check_citations` in `agent.p
 **Q: What happens if the agent cuts corners?**
 There's a self-review step (`review_report` in `agent.py`), a pattern known as *reflection*. When the agent produces a draft report, code checks it for gaps: findings with no retrieved runbook, citations that were never retrieved, and restarting pods whose crash logs were never read. If it finds any, the draft goes back to the agent with the list of problems, and the agent uses its tools again and rewrites the report (at most once, so it can't loop forever). I added it after noticing in testing that the smallest model skipped runbook searches for 4 of 6 services.
 
+**Q: Isn't the demo hard-coded to your 6 broken services?**
+No, and the app can prove it. In the **🧪 Break it yourself** panel, *you* pick any Deployment and one of 7 faults. The panel changes the Deployment, and the agent is never told what changed: no label, no annotation, nothing it can read. It has to find the fault from the cluster itself. The panel is not one of the agent's tools: the agent stays read-only, and the panel refuses to run on any cluster except the local demo one (`CHAOS_CONTEXT`), so it can never touch a real cluster. You can also point the agent at any other cluster or namespace from the sidebar, or paste output from your own cluster in the second tab.
+
+**Q: How does "paste your own output" work, and why not let people connect their cluster?**
+It's the same agent loop in a different *mode*: the only tool it gets is `search_runbooks`, and its instructions say the pasted text is its only evidence (and to ignore any instructions inside it, since that is untrusted data: a prompt-injection defence). Letting visitors connect their own cluster would mean uploading cluster credentials to a public website, which is a serious security risk, so I deliberately didn't build that.
+
 **Q: What is function calling?**
 Each tool is declared to the model with a name, a description and a JSON schema for its parameters. Instead of text, the model can reply with a structured request like `{"name": "describe_pod", "args": {"pod_name": "..."}}`. My code executes it and sends the result back. The model never runs anything itself.
 
@@ -131,7 +137,7 @@ The agent is. Every question triggers real Gemini calls, real tool calls and rea
 A "propose fix → human approves → apply → verify" loop; Prometheus metrics as a tool; triggering the agent automatically from an alert; evaluating accuracy over many injected failures.
 
 **Q: How did you evaluate it?**
-There are 6 injected failures with known root causes, listed in the cluster table in the README, so I can check whether the agent's report names the right root cause for each one. I also wrote 25 offline tests: the tools against simulated kubectl output, input validation, Secret redaction, retrieval returning the correct runbook for each failure type, and snapshot mode.
+There are 6 injected failures with known root causes, listed in the cluster table in the README, so I can check whether the agent's report names the right root cause for each one. I also wrote 36 offline tests: the tools against simulated kubectl output, input validation, Secret redaction, retrieval returning the correct runbook for each failure type, and snapshot mode.
 
 ---
 

@@ -71,11 +71,48 @@ from pod_doctor.agent import review_report  # noqa: E402
 
 _pods = {"type": "tool_result", "name": "list_pods", "result": k8s_tools.list_pods()}
 check("self-review flags 'none retrieved' and unread crash logs",
-      len(review_report("Runbook: none retrieved", _events + [_pods])) == 2)
+      len(review_report("### payment-api - CrashLoopBackOff\nRunbook: none retrieved", _events + [_pods])) == 2)
+check("self-review ignores restarting pods the report doesn't cover",
+      review_report("### web-frontend - ImagePullBackOff\nRunbook: `oomkilled.md`", _events + [_pods]) == [])
 check("self-review passes a complete report",
       review_report("Runbook: `oomkilled.md`", _events + [
           {"type": "tool_call", "name": "get_pod_logs", "args": {"pod_name": p, "previous": True}}
           for p in ("payment-api-5f6b-xk2lp", "report-worker-79b4-mn3op")]) == [])
+
+print("\nBreak-it-yourself tests (fault injection)")
+from pod_doctor import chaos  # noqa: E402
+
+_dep = {"metadata": {"name": "web-frontend", "labels": {"app": "web-frontend"}},
+        "spec": {"template": {"metadata": {"labels": {"app": "web-frontend"}},
+                              "spec": {"containers": [{"name": "web", "image": "nginx:1.27-alpine",
+                                                       "resources": {"requests": {"cpu": "50m"}}}]}}}}
+_expect = {
+    "bad_image": lambda c: c["image"] == "nginx:1.27-alpinee",
+    "missing_configmap": lambda c: c["envFrom"][0]["configMapRef"]["name"] == "web-frontend-settings",
+    "missing_secret": lambda c: c["env"][0]["valueFrom"]["secretKeyRef"]["name"] == "web-frontend-credentials",
+    "readiness_port": lambda c: c["readinessProbe"]["httpGet"]["port"] == 8081,
+    "liveness": lambda c: c["livenessProbe"]["httpGet"]["path"] == "/healthz",
+    "huge_cpu": lambda c: c["resources"]["requests"]["cpu"] == "48",
+    "bad_command": lambda c: c["command"] == ["/app/start-server"],
+}
+for _key, _ok in _expect.items():
+    _broken = chaos.apply_fault(_dep, _key)
+    check(f"fault '{_key}' changes the container as intended",
+          _ok(_broken["spec"]["template"]["spec"]["containers"][0]))
+check("faults leave no label/annotation hint for the agent",
+      all(chaos.apply_fault(_dep, k)["metadata"] == _dep["metadata"] for k in chaos.FAULTS))
+check("original Deployment object is never mutated", "envFrom" not in _dep["spec"]["template"]["spec"]["containers"][0])
+config.KUBE_CONTEXT = "some-real-cluster"
+try:
+    chaos.inject("web-frontend", "bad_image")
+    check("fault injection refused outside the demo cluster", False)
+except k8s_tools.ToolError:
+    check("fault injection refused outside the demo cluster", True)
+config.KUBE_CONTEXT = config.CHAOS_CONTEXT
+
+print("\nPaste-mode tests")
+check("paste mode can only use search_runbooks",
+      "error" in call_tool("list_pods", {}, allowed=["search_runbooks"]))
 
 print("\nSnapshot mode tests (what the deployed website uses)")
 import contextlib, io, tempfile  # noqa: E402
