@@ -1,0 +1,7 @@
+# A small fake e-commerce system ("shop") with ONE healthy service
+# and SIX services that are broken on purpose. Each broken service
+# demonstrates a different real-world Kubernetes failure.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shop

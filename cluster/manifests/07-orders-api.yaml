@@ -1,0 +1,38 @@
+# BROKEN #6 - Running but NOT Ready (the sneaky one)
+# The container is fine, but the readiness probe checks port 8080
+# while nginx listens on port 80. The pod shows "Running" yet 0/1 Ready,
+# so the Service has no endpoints and gets zero traffic.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-api
+  namespace: shop
+  labels: {app: orders-api}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: orders-api}
+  template:
+    metadata:
+      labels: {app: orders-api}
+    spec:
+      containers:
+        - name: orders
+          image: nginx:1.27-alpine
+          ports: [{containerPort: 80}]
+          readinessProbe:
+            httpGet: {path: /, port: 8080}
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 20m, memory: 16Mi}
+            limits: {cpu: 100m, memory: 64Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-api
+  namespace: shop
+spec:
+  selector: {app: orders-api}
+  ports: [{port: 80, targetPort: 80}]

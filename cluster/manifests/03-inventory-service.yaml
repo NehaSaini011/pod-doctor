@@ -1,0 +1,23 @@
+# BROKEN #2 - ImagePullBackOff
+# Typo in the image tag: "1.27-alpne" instead of "1.27-alpine".
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: shop
+  labels: {app: inventory-service}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: inventory-service}
+  template:
+    metadata:
+      labels: {app: inventory-service}
+    spec:
+      containers:
+        - name: inventory
+          image: nginx:1.27-alpne
+          ports: [{containerPort: 80}]
+          resources:
+            requests: {cpu: 20m, memory: 16Mi}
+            limits: {cpu: 100m, memory: 64Mi}

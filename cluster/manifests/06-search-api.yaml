@@ -1,0 +1,24 @@
+# BROKEN #5 - Pending (Unschedulable)
+# Someone requested 32 CPU cores. No node in the cluster is that big,
+# so the scheduler can never place the pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-api
+  namespace: shop
+  labels: {app: search-api}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: search-api}
+  template:
+    metadata:
+      labels: {app: search-api}
+    spec:
+      containers:
+        - name: search
+          image: nginx:1.27-alpine
+          ports: [{containerPort: 80}]
+          resources:
+            requests: {cpu: "32", memory: 64Mi}
+            limits: {cpu: "32", memory: 128Mi}

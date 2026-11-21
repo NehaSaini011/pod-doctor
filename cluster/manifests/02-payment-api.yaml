@@ -1,0 +1,38 @@
+# BROKEN #1 - CrashLoopBackOff
+# The app exits on startup because a required environment variable
+# (DATABASE_URL) was never set in the Deployment.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-api
+  namespace: shop
+  labels: {app: payment-api}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: payment-api}
+  template:
+    metadata:
+      labels: {app: payment-api}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Starting payment-api v2.3.1"
+              echo "Loading config from environment..."
+              echo "PAYMENT_GATEWAY=$PAYMENT_GATEWAY"
+              if [ -z "$DATABASE_URL" ]; then
+                echo "FATAL: required environment variable DATABASE_URL is not set" >&2
+                echo "payment-api exiting with code 1" >&2
+                exit 1
+              fi
+              echo "Connected to database"; sleep 3600
+          env:
+            - name: PAYMENT_GATEWAY
+              value: "razorpay-sandbox"
+          resources:
+            requests: {cpu: 20m, memory: 16Mi}
+            limits: {cpu: 100m, memory: 64Mi}

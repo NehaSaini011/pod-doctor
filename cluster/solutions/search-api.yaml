@@ -1,0 +1,22 @@
+# FIX: request a realistic amount of CPU (100m = 0.1 core) instead of 32 cores.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-api
+  namespace: shop
+  labels: {app: search-api}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: search-api}
+  template:
+    metadata:
+      labels: {app: search-api}
+    spec:
+      containers:
+        - name: search
+          image: nginx:1.27-alpine
+          ports: [{containerPort: 80}]
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 128Mi}

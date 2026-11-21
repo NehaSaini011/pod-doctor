@@ -1,0 +1,79 @@
+"""
+Offline tests: no cluster and no API key needed.
+
+    python tests/test_pod_doctor.py
+"""
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+os.environ["GEMINI_API_KEY"] = ""  # force the offline TF-IDF retriever
+
+from pod_doctor import config, k8s_tools  # noqa: E402
+
+config.GEMINI_API_KEY = ""
+from tests.fake_kubectl import fake_kubectl  # noqa: E402
+
+_original_kubectl = k8s_tools._kubectl
+k8s_tools._kubectl = fake_kubectl  # swap real kubectl for simulated output
+from pod_doctor.rag import get_index  # noqa: E402
+from pod_doctor.tools import call_tool  # noqa: E402
+
+passed = 0
+
+
+def check(name, condition):
+    global passed
+    if not condition:
+        raise AssertionError(f"FAILED: {name}")
+    passed += 1
+    print(f"  ok  {name}")
+
+
+print("Tool tests")
+pods = {p["app"]: p for p in k8s_tools.list_pods()["pods"]}
+check("healthy pod detected", pods["web-frontend"]["healthy"])
+check("crash loop detected", pods["payment-api"]["status"] == "CrashLoopBackOff")
+check("OOMKilled found in last termination", pods["report-worker"]["last_termination"]["reason"] == "OOMKilled")
+check("unschedulable pending detected", pods["search-api"]["status"].startswith("Pending"))
+check("Running-but-not-Ready counted as unhealthy", pods["orders-api"]["status"] == "Running" and not pods["orders-api"]["healthy"])
+check("crash logs readable", "DATABASE_URL" in call_tool("get_pod_logs", {"pod_name": "payment-api-5f6b-xk2lp", "previous": True})["logs"])
+check("missing logs returned as a note, not a crash", "note" in call_tool("get_pod_logs", {"pod_name": "inventory-service-6c8d-q9w8e"}))
+check("secret values hidden", "c2VjcmV0" not in str(call_tool("get_resource", {"kind": "secret", "name": "db-creds"})))
+check("command injection rejected", "error" in call_tool("describe_pod", {"pod_name": "x; rm -rf /"}))
+check("disallowed kind rejected", "error" in call_tool("get_resource", {"kind": "clusterrole"}))
+check("unknown tool handled", "error" in call_tool("delete_everything", {}))
+
+print("\nRAG retrieval tests (each failure must retrieve its own runbook first)")
+expected = {
+    "CrashLoopBackOff exit code 1 missing environment variable": "crashloopbackoff.md",
+    "ImagePullBackOff manifest unknown image tag": "imagepullbackoff.md",
+    "OOMKilled exit code 137 memory limit": "oomkilled.md",
+    "configmap not found CreateContainerConfigError": "createcontainerconfigerror.md",
+    "FailedScheduling Insufficient cpu pending": "pending-unschedulable.md",
+    "Running but not ready readiness probe failed connection refused": "readiness-probe-failing.md",
+}
+for query, runbook in expected.items():
+    check(f"{runbook:32s} <- '{query}'", get_index().search(query, k=1)[0]["runbook"] == runbook)
+
+print("\nSnapshot mode tests (what the deployed website uses)")
+import contextlib, io, tempfile  # noqa: E402
+import scripts.snapshot as snapshot_script  # noqa: E402
+
+config.SNAPSHOT_FILE = Path(tempfile.mkdtemp()) / "snap.json"
+with contextlib.redirect_stdout(io.StringIO()):
+    snapshot_script.main(run=fake_kubectl)
+config.CLUSTER_MODE = "snapshot"
+k8s_tools._snapshot = None
+k8s_tools._kubectl = _original_kubectl  # real dispatcher, now reading the snapshot
+check("snapshot recorded every pod", len(k8s_tools.list_pods()["pods"]) == 7)
+check("logs tail applied to recorded logs",
+      call_tool("get_pod_logs", {"pod_name": "payment-api-5f6b-xk2lp", "previous": True, "tail_lines": 1})["logs"].count("\n") == 1)
+check("unknown pod gives a NotFound error", "error" in call_tool("describe_pod", {"pod_name": "ghost-pod"}))
+secret_json = '{"kind": "Secret", "metadata": {"name": "db"}, "type": "Opaque", "data": {"password": "c2VjcmV0"}}'
+check("secret values redacted before saving", "c2VjcmV0" not in snapshot_script.sanitise(secret_json)
+      and "password" in snapshot_script.sanitise(secret_json))
+config.CLUSTER_MODE = "live"
+
+print(f"\nAll {passed} checks passed (retrieval backend: {get_index().backend}).")
