@@ -101,6 +101,45 @@ Click a preset question, or type your own. To use the terminal version instead:
 python -m pod_doctor.cli "Why is report-worker restarting?"
 ```
 
+## Use it on your own cluster
+
+Pod Doctor isn't tied to the demo: it works on any cluster your `kubectl` can reach. You don't need Docker or `kind` for this; they're only for the demo cluster.
+
+**You need:** Python 3.10+, `kubectl` already working against your cluster, and a free Gemini API key from https://aistudio.google.com/apikey.
+
+1. **Get the code and install it**
+   ```bash
+   git clone https://github.com/NehaSaini011/pod-doctor.git
+   cd pod-doctor
+   python -m venv .venv
+   source .venv/bin/activate        # Windows PowerShell: .venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+2. **Configure it:** copy `.env.example` to `.env` and set:
+   ```
+   GEMINI_API_KEY=your-key
+   KUBE_CONTEXT=your-cluster-context     # find it with: kubectl config get-contexts
+   NAMESPACE=your-app-namespace
+   ```
+3. **Check access:** `kubectl get pods -n your-app-namespace` should list your pods.
+4. **Run it:** `streamlit run app.py`. Switch cluster or namespace any time from the sidebar dropdowns, then ask in plain English, e.g. *"Why is checkout-service restarting?"*
+
+**Recommended: give it a read-only account.** The agent only ever runs `get`, `describe` and `logs`, but you can also make sure it *can't* do more, using Kubernetes' built-in read-only `view` role:
+```bash
+kubectl create serviceaccount pod-doctor -n your-app-namespace
+kubectl create rolebinding pod-doctor-view --clusterrole=view \
+  --serviceaccount=your-app-namespace:pod-doctor -n your-app-namespace
+```
+Then point `KUBE_CONTEXT` at a context that uses this account. The `view` role can't read Secrets; if the agent asks for one, it gets "forbidden" back as an error, reports it, and carries on.
+
+**Teach it about your own apps:** add your team's runbooks as Markdown files in `knowledge_base/`. The search index rebuilds itself the next time the app starts.
+
+**No cluster access?** Use the **📋 Analyze your own kubectl output** tab (also on the public site): paste the output of `kubectl describe pod <name>`, `kubectl logs <name> --previous` and `kubectl get events`.
+
+**Good to know**
+- Cluster data the agent reads (pod descriptions, logs, events) is sent to the Gemini API. Check your organisation allows that before using it on production; Secret values are never sent.
+- The 🧪 **Break it yourself** panel only works on the demo cluster (`kind-pod-doctor`); it is locked so it can never change your cluster.
+
 ## Tests (no cluster or API key needed)
 
 ```powershell
